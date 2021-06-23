@@ -16,25 +16,15 @@ Get information about connected PCI devices
 ### Usage
 
 ```rust
-    use pci_fetch::*;
+// Fetch all connected PCI devices.
+let all_devices = get_pci_devices();
 
-    // Specify a device
-    let pci_device = std::path::PathBuf::from("/sys/bus/pci/devices/0000:00:00.0");
+// Fetch PCI devices by class (classes are defined in https://pci-ids.ucw.cz/read/PD/)
+let gpus = get_pci_devices_by_class(DeviceClass::DisplayController);
 
-    // Fetch PCI device class
-    let class = get_class(&pci_device, true).unwrap();
-    // Fetch PCI device device
-    let device = get_device(&pci_device, true).unwrap();
-    // Fetch PCI device vendor
-    let vendor = get_vendor(&pci_device, true).unwrap();
-    // Fetch PCI device revision
-    let revision = get_revision(&pci_device, true).unwrap();
-
-    println!("Class: {:?}", class);
-    println!("Device: {:?}", device);
-    println!("Vendor: {:?}", vendor);
-    println!("Revision: {:?}", revision);
-
+for g in gpus {
+    println!("{}", g);
+}    
 ```
 
 ---
