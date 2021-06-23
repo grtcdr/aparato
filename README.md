@@ -7,7 +7,7 @@ Get information about connected PCI devices
     <img src="https://img.shields.io/crates/v/pci_fetch" alt="Version" />
 </a>
 
-<a href="https://docs.rs/crate/libmacchina/">
+<a href="https://docs.rs/crate/pci_fetch/">
     <img src="https://docs.rs/pci_fetch/badge.svg" alt="Docs" />
 </a>
 
