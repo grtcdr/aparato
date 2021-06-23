@@ -2,7 +2,7 @@
 
 Get information on PCI devices
 
-# Usage
+### Usage
 
 ```Rust
     use pci_fetch::*;
