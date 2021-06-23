@@ -26,6 +26,8 @@ Get information on PCI devices
 
 ```
 
+---
+
 ### Platform Support
 
 | Platform  | Support |
