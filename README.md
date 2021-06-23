@@ -4,7 +4,7 @@ Get information on PCI devices
 
 ### Usage
 
-```Rust
+```rust
     use pci_fetch::*;
 
     // Specify a device
