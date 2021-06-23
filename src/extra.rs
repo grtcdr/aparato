@@ -12,7 +12,7 @@ pub fn list_dir_entries(path: &Path) -> Vec<PathBuf> {
     directory_entries
 }
 
-pub fn basename<'a>(path: &'a str) -> PathBuf {
+pub fn basename<'a>(path: String) -> String {
     let mut pieces = path.rsplit("/");
     match pieces.next() {
         Some(p) => p.into(),
