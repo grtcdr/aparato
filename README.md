@@ -25,3 +25,9 @@ Get information on PCI devices
     println!("Revision: {:?}", revision);
 
 ```
+
+### Platform Support
+
+| Platform  | Support |
+| :-------: | :-----: |
+| Linux     |    ✓    |
