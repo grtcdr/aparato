@@ -1,6 +1,17 @@
-# pci_fetch
+<div align="center">
+<h1>pci_fetch</h1>
 
-Get information on PCI devices
+Get information about connected PCI devices
+
+<a href="https://crates.io/crates/pci_fetch">
+    <img src="https://img.shields.io/crates/v/pci_fetch" alt="Version" />
+</a>
+
+<a href="https://docs.rs/crate/pci_fetch/">
+    <img src="https://docs.rs/pci_fetch/badge.svg" alt="Docs" />
+</a>
+
+</div>
 
 ### Usage
 
@@ -25,6 +36,8 @@ Get information on PCI devices
     println!("Revision: {:?}", revision);
 
 ```
+
+---
 
 ### Platform Support
 
