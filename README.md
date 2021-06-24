@@ -16,6 +16,8 @@ Get information about connected PCI devices; essentially "lspci" for Rust 🦀.
 
 ### Usage
 
+Add the following to your project's *Cargo.toml* file:
+
 ```toml
 pci_fetch = "2.1.0"
 ```
