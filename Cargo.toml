@@ -2,9 +2,9 @@
 name = "pci_fetch"
 description = "Get information about connected PCI devices"
 keywords = [ "pci", "fetch", "hardware" ]
-version = "2.2.0"
+version = "2.2.1"
 authors = ["grtcdr <ba.tahaaziz@gmail.com>"]
 edition = "2018"
 repository = "https://github.com/grtcdr/pci_fetch"
-license-file = "LICENSE"
+license = "MIT"
 readme = "README.md"
