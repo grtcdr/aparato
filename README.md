@@ -16,6 +16,12 @@ Get information about connected PCI devices; essentially "lspci" for Rust 🦀.
 
 ### Usage
 
+```toml
+pci_fetch = "2.1.0"
+```
+
+### Examples
+
 ```rust
 use pci_fetch::classes::DeviceClass;
 use pci_fetch::linux::*;
