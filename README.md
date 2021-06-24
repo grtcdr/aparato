@@ -16,15 +16,29 @@ Get information about connected PCI devices
 ### Usage
 
 ```rust
-// Fetch all connected PCI devices.
-let all_devices = get_pci_devices();
+use pci_fetch::classes::DeviceClass;
+use pci_fetch::linux::*;
+use pci_fetch::traits::*;
+use std::path::PathBuf;
 
-// Fetch PCI devices by class (classes are defined in https://pci-ids.ucw.cz/read/PD/)
-let gpus = get_pci_devices_by_class(DeviceClass::DisplayController);
+fn main() {
+    // Instantiate a new PCIDevice so we can get to know it a bit.
+    let mut device: PCIDevice = PCIDevice::new(PathBuf::from("/sys/bus/pci/devices/0000:00:02.0"));
+    // This little guy is important :)
+    device.init();
 
-for g in gpus {
-    println!("{}", g);
-}    
+    println!("Path: {:?}", device.path());         // e.g. /sys/bus/pci/devices/0000:00:02.0
+    println!("Address: {}", device.address());     // e.g. 00:02.0
+    println!("Class ID: {}", device.class_id());   // e.g. 03
+    println!("Class ID: {}", device.class_name()); // e.g. Display Controller
+
+    // Alternatively, we can get information on PCI devices through fetching them in bulk!
+
+    // Returns a list of the available display controllers.
+    let list: Vec<PCIDevice> = fetch_by_class(DeviceClass::DisplayController);
+    println!("{:?}", list);
+}
+
 ```
 
 ---

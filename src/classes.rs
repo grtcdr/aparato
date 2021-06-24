@@ -1,5 +1,7 @@
 use std::fmt;
 
+/// Each `PCIDevice` has a class, and `DeviceClass` 
+/// is the collection of all these classes.
 pub enum DeviceClass {
     Unclassified,                      // ID: 00
     MassStorageController,             // ID: 01

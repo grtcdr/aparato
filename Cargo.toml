@@ -1,7 +1,8 @@
 [package]
 name = "pci_fetch"
 description = "Get information about connected PCI devices"
-version = "1.0.0"
+keywords = [ "pci", "fetch", "hardware" ]
+version = "2.0.0"
 authors = ["grtcdr <ba.tahaaziz@gmail.com>"]
 edition = "2018"
 repository = "https://github.com/grtcdr/pci_fetch"
