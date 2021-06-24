@@ -1,7 +1,8 @@
 <div align="center">
 <h1>pci_fetch</h1>
 
-Get information about connected PCI devices
+Get information about connected PCI devices; essentially "lspci" for Rust 🦀.
+
 
 <a href="https://crates.io/crates/pci_fetch">
     <img src="https://img.shields.io/crates/v/pci_fetch" alt="Version" />
@@ -30,13 +31,23 @@ fn main() {
     println!("Path: {:?}", device.path());         // e.g. /sys/bus/pci/devices/0000:00:02.0
     println!("Address: {}", device.address());     // e.g. 00:02.0
     println!("Class ID: {}", device.class_id());   // e.g. 03
-    println!("Class ID: {}", device.class_name()); // e.g. Display Controller
+    println!("Class Name: {}", device.class_name()); // e.g. Display Controller
 
     // Alternatively, we can get information on PCI devices through fetching them in bulk!
 
-    // Returns a list of the available display controllers.
+    // Return a list of the available PCI devices of a specific class.
+    //    Example: This should return all the available GPUs but with little amount of information.
     let list: Vec<PCIDevice> = fetch_by_class(DeviceClass::DisplayController);
     println!("{:?}", list);
+
+    // Return a list of the available PCI devices of a specific class with detailed information.
+    //    Example: This should return all the available GPUs.
+    let gpus: Vec<PCIDevice> = fetch_by_class_detailed(DeviceClass::DisplayController);
+    println!("{:?}", gpus);
+
+    // Return a list of the available display controllers with detailed information.
+    let detailed_list: Vec<PCIDevice> = fetch_detailed();
+    println!("{:?}", detailed_list);
 }
 
 ```
