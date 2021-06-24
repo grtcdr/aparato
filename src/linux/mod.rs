@@ -128,3 +128,22 @@ pub fn fetch_by_class_detailed(class: DeviceClass) -> Vec<PCIDevice> {
 
     vec![]
 }
+
+/// Returns a list of all available GPUs with only the necessary information.
+///
+/// This is essentially a wrapper for `fetch_by_class(DeviceClass::DisplayController)` 
+/// but tries to extract only the necessary data from device names, for example: \
+/// - `TU117M [GeForce GTX 1650 Mobile / Max-Q]` can become `GeForce GTX 1650 Mobile / Max-Q`
+pub fn fetch_gpus() -> Vec<PCIDevice> {
+    let mut gpus = fetch_by_class_detailed(DeviceClass::DisplayController);
+    for gpu in &mut gpus {
+        let whole_name = gpu.device_name();
+        if let Some(start_bytes) = whole_name.find("[") {
+            let end_bytes = whole_name.find("]").unwrap_or(whole_name.len());
+            let new_name = &whole_name[start_bytes+1..end_bytes];
+            gpu.set_device_name(new_name.to_string());
+        }
+        
+    }
+    gpus
+}
