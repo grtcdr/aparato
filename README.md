@@ -53,7 +53,7 @@ fn main() {
     let gpus: Vec<PCIDevice> = fetch_by_class_detailed(DeviceClass::DisplayController);
     println!("{:?}", gpus);
 
-    // Return a list of the available display controllers with detailed information.
+    // Return a list of available PCI devices with detailed information.
     let detailed_list: Vec<PCIDevice> = fetch_detailed();
     println!("{:?}", detailed_list);
 }
