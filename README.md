@@ -1,8 +1,7 @@
 <div align="center">
 <h1>pci_fetch</h1>
 
-Get information about connected PCI devices; essentially "lspci" for Rust 🦀.
-
+A pci.ids-compliant library for getting information about available PCI devices.
 
 <a href="https://crates.io/crates/pci_fetch">
     <img src="https://img.shields.io/crates/v/pci_fetch" alt="Version" />

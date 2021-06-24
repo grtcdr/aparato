@@ -1,6 +1,6 @@
 [package]
 name = "pci_fetch"
-description = "Get information about connected PCI devices"
+description = "A pci.ids-compliant library for getting information about available PCI devices."
 keywords = [ "pci", "fetch", "hardware" ]
 version = "2.2.1"
 authors = ["grtcdr <ba.tahaaziz@gmail.com>"]
