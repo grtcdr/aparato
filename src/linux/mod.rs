@@ -241,11 +241,9 @@ impl Fetch for LinuxPCIDevice {
             if device.class_name() == class.to_string() {
                 devices.push(device);
             }
-
-            return devices;
         }
-
-        vec![]
+        
+        return devices;
     }
 
     fn fetch_gpus() -> Vec<LinuxPCIDevice> {
