@@ -188,6 +188,7 @@ impl Properties for LinuxPCIDevice {
                 _ => DeviceClass::Unknown.to_string(),
             }
         }
+        return devices;
     }
 
     fn set_vendor_name(&mut self, name: String) {
@@ -224,9 +225,11 @@ impl Fetch for LinuxPCIDevice {
             if device.class_name() == class.to_string() {
                 devices.push(device);
             }
+
+            return devices;
         }
 
-        return devices;
+        vec![]
     }
 
     fn fetch_gpus() -> Vec<LinuxPCIDevice> {

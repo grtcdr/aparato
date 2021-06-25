@@ -5,13 +5,12 @@ use std::path::PathBuf;
 pub trait Properties {
     /// This function returns a new instance of PCIDevice
     fn new(path: &str) -> Self;
-
     /// After creating a new instance of PCIDevice, `init()` should be
     /// run to fetch the data of the newly created instance.
     fn init(&mut self);
 
     // -v- The getters -v-
-    /// Return the `PCIDevice` path
+    /// This function returns the `PCIDevice` path.
     fn path(&self) -> PathBuf;
 
     /// This function returns the `PCIDevice` address.
@@ -39,7 +38,7 @@ pub trait Properties {
     fn device_name(&self) -> String;
 
     // -v- The setters -v-
-    /// Set the `path` field for the struct that implements it
+    /// Set the `path` field of the struct that implements it
     fn set_path(&mut self, p: PathBuf);
 
     /// This function sets the `address` field of the struct that implements it
