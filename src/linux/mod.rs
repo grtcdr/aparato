@@ -188,7 +188,6 @@ impl Properties for LinuxPCIDevice {
                 _ => DeviceClass::Unknown.to_string(),
             }
         }
-        return devices;
     }
 
     fn set_vendor_name(&mut self, name: String) {
