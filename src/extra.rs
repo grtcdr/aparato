@@ -2,6 +2,7 @@ use std::fs::File;
 use std::io::{self, BufRead};
 use std::path::{Path, PathBuf};
 
+/// This function returns a list of entries located inside a given directory.
 pub fn list_dir_entries(path: &str) -> Vec<PathBuf> {
     let mut directory_entries: Vec<PathBuf> = Vec::new();
     let directory = std::fs::read_dir(path);
@@ -14,7 +15,7 @@ pub fn list_dir_entries(path: &str) -> Vec<PathBuf> {
     directory_entries
 }
 
-// Returns the basename of a path
+/// This function returns the basename of a given path.
 pub fn basename<'a>(path: String) -> String {
     let mut pieces = path.rsplit("/");
     match pieces.next() {
@@ -24,8 +25,7 @@ pub fn basename<'a>(path: String) -> String {
 }
 
 #[allow(dead_code)]
-// The output is wrapped in a Result to allow matching on errors
-// Returns an Iterator to the Reader of the lines of the file.
+/// This function returns an iterator over the lines of a given file.
 pub fn read_lines<P>(filename: P) -> io::Result<io::Lines<io::BufReader<File>>>
 where
     P: AsRef<Path>,

@@ -18,6 +18,7 @@ pub struct LinuxPCIDevice {
     vendor_name: String,
     device_id: String,
     device_name: String,
+    numa_node: isize,
 }
 
 impl Properties for LinuxPCIDevice {
@@ -31,6 +32,7 @@ impl Properties for LinuxPCIDevice {
             vendor_name: String::new(),
             device_id: String::new(),
             device_name: String::new(),
+            numa_node: -1,
         };
     }
 
@@ -60,6 +62,10 @@ impl Properties for LinuxPCIDevice {
 
     fn device_id(&self) -> String {
         self.device_id.to_owned()
+    }
+
+    fn numa_node(&self) -> isize {
+        self.numa_node.to_owned()
     }
 
     fn class_name(&self) -> String {
@@ -109,6 +115,14 @@ impl Properties for LinuxPCIDevice {
             str = str.trim_start_matches("0x").to_string();
             str.pop();
             self.device_id = str;
+        }
+    }
+
+    fn set_numa_node(&mut self) {
+        if let Ok(v) = std::fs::read_to_string(&self.path().join("vendor")) {
+            if let Ok(p) = v.parse::<isize>() {
+                return self.numa_node = p;
+            }
         }
     }
 
@@ -272,7 +286,8 @@ impl Fetch for LinuxPCIDevice {
     }
 
     fn fetch_gpus() -> Vec<LinuxPCIDevice> {
-        let mut gpus: Vec<LinuxPCIDevice> = Self::fetch_by_class_detailed(DeviceClass::DisplayController);
+        let mut gpus: Vec<LinuxPCIDevice> =
+            Self::fetch_by_class_detailed(DeviceClass::DisplayController);
         for gpu in &mut gpus {
             let whole_name = gpu.device_name();
             if let Some(start_bytes) = whole_name.find("[") {

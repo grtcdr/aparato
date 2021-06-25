@@ -2,11 +2,9 @@ use std::fmt;
 
 /// Each `PCIDevice` has a class, and `DeviceClass` 
 /// is the collection of all of them. \
-///
 /// Keep in mind that:
 ///
-/// - The naming scheme complies with that used by the PCI ID repository.
-///
+/// - The naming scheme of classes (enum variants) complies with that used by the PCI ID repository.
 /// - `Unknown` is an additional class (not part of the official PCI ID classes) that is reserved for 
 /// when a PCI device's class is none of the other variants.
 /// When the library parses a device's class, and determines it to be `Unknown` (highly unlikely),
