@@ -289,7 +289,7 @@ mod tests {
     #[test]
     fn test_device_name() {
         let device = LinuxPCIDevice::new("/sys/bus/pci/devices/0000:00:00.0");
-        assert_ne!(device.vendor_name(), "");
+        assert_ne!(device.device_name(), "");
     }
 
     #[test]
