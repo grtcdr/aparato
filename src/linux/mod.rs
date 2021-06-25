@@ -23,7 +23,7 @@ pub struct LinuxPCIDevice {
 
 impl Properties for LinuxPCIDevice {
     fn new(path: &str) -> Self {
-        return LinuxPCIDevice {
+        let mut device = LinuxPCIDevice {
             path: PathBuf::from(path),
             address: String::new(),
             class_id: String::new(),
@@ -34,6 +34,39 @@ impl Properties for LinuxPCIDevice {
             device_name: String::new(),
             numa_node: -1,
         };
+
+        Self::init(&mut device);
+
+        if let Ok(lines) = read_lines(PATH_TO_PCI_IDS) {
+            for line in lines {
+                if let Ok(l) = line {
+                    // Ignore empty lines, comments, and class definitions
+                    if l.len() == 0 || l.starts_with("#") || l.starts_with("C") {
+                        continue;
+                    }
+
+                    if !l.starts_with("\t") {
+                        // This is the condition for vendors
+                        let vendor_id = l[..4].trim_start();
+                        let vendor_name = l[4..].trim_start();
+
+                        if device.vendor_id() == vendor_id {
+                            device.vendor_name = vendor_name.to_string();
+                        }
+                    } else if l.starts_with("\t") {
+                        // This is the condition for devices
+                        let device_id = l[..5].trim_start();
+                        let device_name = l[5..].trim_start();
+
+                        if device.device_id() == device_id {
+                            device.device_name = device_name.to_string();
+                        }
+                    }
+                }
+            }
+        }
+
+        return device;
     }
 
     fn init(&mut self) {
