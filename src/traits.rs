@@ -26,7 +26,7 @@ pub trait Properties {
     /// This function returns the `PCIDevice` device ID.
     fn device_id(&self) -> String;
 
-    /// This function returns the `PCIDevice` device ID.
+    /// This function returns the `PCIDevice` NUMA node.
     fn numa_node(&self) -> isize;
     
     /// This function returns the `PCIDevice` class name.
