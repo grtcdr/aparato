@@ -4,7 +4,7 @@ use crate::PCIDevice;
 
 pub trait Properties {
     /// This function returns a new instance of PCIDevice
-    fn new(path: PathBuf) -> Self;
+    fn new(path: &str) -> Self;
     
     /// After creating a new instance of PCIDevice, `init()` should be
     /// run to fetch the data of the newly created instance.

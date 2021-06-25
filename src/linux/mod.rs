@@ -22,9 +22,9 @@ pub struct LinuxPCIDevice {
 }
 
 impl Properties for LinuxPCIDevice {
-    fn new(path: PathBuf) -> Self {
+    fn new(path: &str) -> Self {
         return LinuxPCIDevice {
-            path: path,
+            path: PathBuf::from(path),
             address: String::new(),
             class_id: String::new(),
             class_name: String::new(),
@@ -126,15 +126,7 @@ impl Properties for LinuxPCIDevice {
         }
     }
 
-    fn set_vendor_name(&mut self, name: String) {
-        self.vendor_name = name;
-    }
-
-    fn set_device_name(&mut self, name: String) {
-        self.device_name = name;
-    }
-
-    /// This function sets the PCIDevice's `class_name` associated
+    /// This function sets the PCI device's `class_name` associated
     /// with its `class_id` *as defined by **pci.ids***.
     fn set_class_name(&mut self) {
         if !&self.class_id.is_empty() {
@@ -163,6 +155,14 @@ impl Properties for LinuxPCIDevice {
             }
         }
     }
+
+    fn set_vendor_name(&mut self, name: String) {
+        self.vendor_name = name;
+    }
+
+    fn set_device_name(&mut self, name: String) {
+        self.device_name = name;
+    }
 }
 
 impl std::fmt::Display for LinuxPCIDevice {
@@ -176,7 +176,7 @@ impl Fetch for LinuxPCIDevice {
         let mut devices = Vec::new();
         let dir_entries = list_dir_entries(PATH_TO_PCI_DEVICES);
         for dir in dir_entries {
-            let mut device = LinuxPCIDevice::new(dir);
+            let mut device = LinuxPCIDevice::new(dir.to_str().unwrap());
             device.init();
             devices.push(device);
         }
@@ -231,7 +231,7 @@ impl Fetch for LinuxPCIDevice {
         let mut devices = Vec::new();
         let dir_entries = list_dir_entries(PATH_TO_PCI_DEVICES);
         for dir in dir_entries {
-            let mut device: LinuxPCIDevice = LinuxPCIDevice::new(dir);
+            let mut device: LinuxPCIDevice = LinuxPCIDevice::new(dir.to_str().unwrap());
             device.init();
             if device.class_name() == class.to_string() {
                 devices.push(device);
@@ -297,5 +297,75 @@ impl Fetch for LinuxPCIDevice {
             }
         }
         gpus
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    // Note this useful idiom: importing names from outer (for mod tests) scope.
+    use super::*;
+
+    #[test]
+    fn test_address() {
+        let mut device = LinuxPCIDevice::new("/sys/bus/pci/devices/0000:00:00.0");
+        device.init();
+        assert_ne!(device.address(), "");
+    }
+
+    #[test]
+    fn test_path() {
+        let mut device = LinuxPCIDevice::new("/sys/bus/pci/devices/0000:00:00.0");
+        device.init();
+        assert_ne!(device.path(), PathBuf::new());
+    }
+
+    #[test]
+    fn test_class_name() {
+        let mut device = LinuxPCIDevice::new("/sys/bus/pci/devices/0000:00:00.0");
+        device.init();
+        assert_ne!(device.class_name(), "");
+    }
+
+    #[test]
+    fn test_class_id() {
+        let mut device = LinuxPCIDevice::new("/sys/bus/pci/devices/0000:00:00.0");
+        device.init();
+        assert_ne!(device.device_id(), "");
+    }
+    
+
+    #[test]
+    fn test_vendor_name() {
+        let mut device = LinuxPCIDevice::new("/sys/bus/pci/devices/0000:00:00.0");
+        device.init();
+        assert_ne!(device.vendor_name(), "");
+    }
+
+    #[test]
+    fn test_vendor_id() {
+        let mut device = LinuxPCIDevice::new("/sys/bus/pci/devices/0000:00:00.0");
+        device.init();
+        assert_ne!(device.vendor_id(), "");
+    }
+
+    #[test]
+    fn test_device_name() {
+        let mut device = LinuxPCIDevice::new("/sys/bus/pci/devices/0000:00:00.0");
+        device.init();
+        assert_ne!(device.vendor_name(), "");
+    }
+
+    #[test]
+    fn test_device_id() {
+        let mut device = LinuxPCIDevice::new("/sys/bus/pci/devices/0000:00:00.0");
+        device.init();
+        assert_ne!(device.device_id(), "");
+    }
+
+    #[test]
+    fn test_numa_node() {
+        let mut device = LinuxPCIDevice::new("/sys/bus/pci/devices/0000:00:00.0");
+        device.init();
+        assert_ne!(device.numa_node().to_string(), "");
     }
 }
