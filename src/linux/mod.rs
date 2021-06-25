@@ -4,7 +4,7 @@ use crate::traits::*;
 use std::path::PathBuf;
 
 /// This is where PCI devices are located.
-const PATH_TO_PCI_DEVICES: &str = "/sys/bus/pci/devices";
+const PATH_TO_PCI_DEVICES: &str = "/sys/bus/pci/devices/";
 /// This is where the pci.ids file is located.
 const PATH_TO_PCI_IDS: &str = "/usr/share/hwdata/pci.ids";
 
@@ -23,8 +23,10 @@ pub struct LinuxPCIDevice {
 
 impl Properties for LinuxPCIDevice {
     fn new(path: &str) -> Self {
+        let mut path_vec = [path].to_vec();
+
         let mut device = LinuxPCIDevice {
-            path: PathBuf::from(path),
+            path: PathBuf::from(path_vec.concat()),
             address: String::new(),
             class_id: String::new(),
             class_name: String::new(),
@@ -34,6 +36,21 @@ impl Properties for LinuxPCIDevice {
             device_name: String::new(),
             numa_node: -1,
         };
+
+        // One of the following two conditions will try to autocomplete the path of the
+        // PCI device if the one provided doesn't point to a real path in the filesystem.
+        //   e.g.  0000:00:00.0 ->  /sys/bus/pci/devices/0000:00:00.0
+        //         00:00.0      ->  /sys/bus/pci/devices/0000:00:00.0
+        if !PathBuf::from(path_vec.concat()).is_dir() {
+            path_vec.insert(0, PATH_TO_PCI_DEVICES);
+            device.path = PathBuf::from(path_vec.concat());
+            if !PathBuf::from(path_vec.concat()).is_dir() {
+                let mut id = path.to_string();
+                id.insert_str(0, "0000:");
+                std::mem::swap(&mut path_vec[1], &mut id.as_str());
+                device.path = PathBuf::from(path_vec.concat());
+            }
+        }
 
         Self::init(&mut device);
 
@@ -250,57 +267,59 @@ mod tests {
     // Note this useful idiom: importing names from outer (for mod tests) scope.
     use super::*;
 
+    const PLACEHOLDER_PCI_DEVICE: &str = "/sys/bus/pci/devices/0000:00:00.0";
+
     #[test]
     fn test_address() {
-        let device = LinuxPCIDevice::new("/sys/bus/pci/devices/0000:00:00.0");
+        let device = LinuxPCIDevice::new(PLACEHOLDER_PCI_DEVICE);
         assert_ne!(device.address(), "");
     }
 
     #[test]
     fn test_path() {
-        let device = LinuxPCIDevice::new("/sys/bus/pci/devices/0000:00:00.0");
+        let device = LinuxPCIDevice::new(PLACEHOLDER_PCI_DEVICE);
         assert_ne!(device.path(), PathBuf::new());
     }
 
     #[test]
     fn test_class_name() {
-        let device = LinuxPCIDevice::new("/sys/bus/pci/devices/0000:00:00.0");
+        let device = LinuxPCIDevice::new(PLACEHOLDER_PCI_DEVICE);
         assert_ne!(device.class_name(), "");
     }
 
     #[test]
     fn test_class_id() {
-        let device = LinuxPCIDevice::new("/sys/bus/pci/devices/0000:00:00.0");
+        let device = LinuxPCIDevice::new(PLACEHOLDER_PCI_DEVICE);
         assert_ne!(device.device_id(), "");
     }
 
     #[test]
     fn test_vendor_name() {
-        let device = LinuxPCIDevice::new("/sys/bus/pci/devices/0000:00:00.0");
+        let device = LinuxPCIDevice::new(PLACEHOLDER_PCI_DEVICE);
         assert_ne!(device.vendor_name(), "");
     }
 
     #[test]
     fn test_vendor_id() {
-        let device = LinuxPCIDevice::new("/sys/bus/pci/devices/0000:00:00.0");
+        let device = LinuxPCIDevice::new(PLACEHOLDER_PCI_DEVICE);
         assert_ne!(device.vendor_id(), "");
     }
 
     #[test]
     fn test_device_name() {
-        let device = LinuxPCIDevice::new("/sys/bus/pci/devices/0000:00:00.0");
+        let device = LinuxPCIDevice::new(PLACEHOLDER_PCI_DEVICE);
         assert_ne!(device.device_name(), "");
     }
 
     #[test]
     fn test_device_id() {
-        let device = LinuxPCIDevice::new("/sys/bus/pci/devices/0000:00:00.0");
+        let device = LinuxPCIDevice::new(PLACEHOLDER_PCI_DEVICE);
         assert_ne!(device.device_id(), "");
     }
 
     #[test]
     fn test_numa_node() {
-        let device = LinuxPCIDevice::new("/sys/bus/pci/devices/0000:00:00.0");
+        let device = LinuxPCIDevice::new(PLACEHOLDER_PCI_DEVICE);
         assert_ne!(device.numa_node().to_string(), "");
     }
 }

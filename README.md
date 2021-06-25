@@ -30,7 +30,7 @@ use aparato::traits::*;
 
 fn main() {
     // Instantiate a new PCIDevice so we can get to know it a bit.
-    let device: PCIDevice = PCIDevice::new("/sys/bus/pci/devices/0000:00:02.0");
+    let device: PCIDevice = PCIDevice::new("0000:00:02.0");
 
     println!("Class Name: {}", device.class_name());    // e.g. Display Controller
     println!("Vendor Name: {}", device.vendor_name());  // e.g. Intel Corporation
