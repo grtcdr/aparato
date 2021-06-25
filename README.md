@@ -29,6 +29,7 @@ use aparato::classes::DeviceClass;
 use aparato::traits::*;
 
 fn main() {
+    // Know the address domain of the PCI device?
     // Instantiate a new PCIDevice so we can get to know it a bit.
     let device: PCIDevice = PCIDevice::new("0000:00:02.0");
 
