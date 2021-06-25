@@ -2,9 +2,12 @@
 name = "aparato"
 description = "A pci.ids-compliant library for getting information about available PCI devices."
 keywords = [ "pci", "library", "hardware" ]
-version = "3.1.0"
+version = "3.2.0"
 authors = ["grtcdr <grtcdr@pm.me>"]
 edition = "2018"
 repository = "https://github.com/grtcdr/aparato"
 license = "MIT"
 readme = "README.md"
+
+[dependencies]
+cfg-if = "1.0.0"
