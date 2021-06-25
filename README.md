@@ -1,14 +1,14 @@
 <div align="center">
-<h1>pci_fetch</h1>
+<h1>aparato</h1>
 
 A pci.ids-compliant library for getting information about available PCI devices.
 
-<a href="https://crates.io/crates/pci_fetch">
-    <img src="https://img.shields.io/crates/v/pci_fetch" alt="Version" />
+<a href="https://crates.io/crates/aparato">
+    <img src="https://img.shields.io/crates/v/aparato" alt="version" />
 </a>
 
-<a href="https://docs.rs/crate/pci_fetch/">
-    <img src="https://docs.rs/pci_fetch/badge.svg" alt="Docs" />
+<a href="https://docs.rs/crate/aparato/">
+    <img src="https://docs.rs/aparato/badge.svg" alt="docs" />
 </a>
 
 </div>
@@ -18,51 +18,45 @@ A pci.ids-compliant library for getting information about available PCI devices.
 Add the following to your project's *Cargo.toml* file:
 
 ```toml
-pci_fetch = "2.1.0"
+aparato = "3.0.0"
 ```
 
 ### Examples
 
 ```rust
-use pci_fetch::classes::DeviceClass;
-use pci_fetch::linux::*;
-use pci_fetch::traits::*;
-use std::path::PathBuf;
+use aparato::PCIDevice;
+use aparato::classes::DeviceClass;
+use aparato::traits::*;
 
 fn main() {
     // Instantiate a new PCIDevice so we can get to know it a bit.
-    let mut device: PCIDevice = PCIDevice::new(PathBuf::from("/sys/bus/pci/devices/0000:00:02.0"));
-    // This little guy is important :)
-    device.init();
+    let device: PCIDevice = PCIDevice::new("/sys/bus/pci/devices/0000:00:02.0");
 
-    println!("Path: {:?}", device.path());         // e.g. /sys/bus/pci/devices/0000:00:02.0
-    println!("Address: {}", device.address());     // e.g. 00:02.0
-    println!("Class ID: {}", device.class_id());   // e.g. 03
-    println!("Class Name: {}", device.class_name()); // e.g. Display Controller
+    println!("Class Name: {}", device.class_name());    // e.g. Display Controller
+    println!("Vendor Name: {}", device.vendor_name());  // e.g. Intel Corporation
+    println!("Device Name: {}", device.device_name());  // e.g. WhiskeyLake-U GT2 [UHD Graphics 620]
 
     // Alternatively, we can get information on PCI devices through fetching them in bulk!
 
-    // Return a list of the available PCI devices of a specific class.
-    //    Example: This should return all the available GPUs but with little amount of information.
-    let list: Vec<PCIDevice> = fetch_by_class(DeviceClass::DisplayController);
-    println!("{:?}", list);
-
-    // Return a list of the available PCI devices of a specific class with detailed information.
-    //    Example: This should return all the available GPUs.
-    let gpus: Vec<PCIDevice> = fetch_by_class_detailed(DeviceClass::DisplayController);
-    println!("{:?}", gpus);
-
-    // Return a list of available PCI devices with detailed information.
-    let detailed_list: Vec<PCIDevice> = fetch_detailed();
+    // Return a list of available PCI devices and their information.
+    let detailed_list: Vec<PCIDevice> = PCIDevice::fetch();
     println!("{:?}", detailed_list);
+
+    // Return a list of the available PCI devices of a specific class.
+    // -> "thing" holds a list of all the detected network controllers and their information.
+    let thing: Vec<PCIDevice> = PCIDevice::fetch_by_class(DeviceClass::NetworkController);
+    println!("{:?}", thing);
 }
 
 ```
 
 ---
 
-### Platform Support
-
 | Platform  | Support |
 | :-------: | :-----: |
 | Linux     |    ✓    |
+| Windows   |         |
+| macOS     |         |
+| NetBSD    |         |
+
+_aparato_ is still a work in progress.

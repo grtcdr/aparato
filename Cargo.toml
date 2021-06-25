@@ -1,10 +1,10 @@
 [package]
-name = "pci_fetch"
+name = "aparato"
 description = "A pci.ids-compliant library for getting information about available PCI devices."
-keywords = [ "pci", "fetch", "hardware" ]
-version = "2.2.2"
-authors = ["grtcdr <ba.tahaaziz@gmail.com>"]
+keywords = [ "pci", "library", "hardware" ]
+version = "3.0.0"
+authors = ["grtcdr <grtcdr@pm.me>"]
 edition = "2018"
-repository = "https://github.com/grtcdr/pci_fetch"
+repository = "https://github.com/grtcdr/aparato"
 license = "MIT"
 readme = "README.md"
