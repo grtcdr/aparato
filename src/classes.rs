@@ -72,7 +72,7 @@ impl From<DeviceClass> for &'static str {
             DeviceClass::DisplayController => "Display Controller",
             DeviceClass::MultimediaController => "Multimedia Controller",
             DeviceClass::MemoryController => "Memory Controller",
-            DeviceClass::PCIBridge => "Bridge",
+            DeviceClass::PCIBridge => "PCI Bridge",
             DeviceClass::CommunicationController => "Communication Controller",
             DeviceClass::GenericSystemPeripheral => "Generic System Peripheral",
             DeviceClass::InputDeviceController => "Input Device Controller",

@@ -220,7 +220,7 @@ impl Fetch for LinuxPCIDevice {
         let mut devices = Vec::new();
         let dir_entries = list_dir_entries(PATH_TO_PCI_DEVICES);
         for dir in dir_entries {
-            let device: LinuxPCIDevice = LinuxPCIDevice::new(dir.to_str().unwrap());
+            let device = LinuxPCIDevice::new(dir.to_str().unwrap());
             if device.class_name() == class.to_string() {
                 devices.push(device);
             }
