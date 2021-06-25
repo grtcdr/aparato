@@ -242,7 +242,7 @@ impl Fetch for LinuxPCIDevice {
                 devices.push(device);
             }
         }
-        
+
         return devices;
     }
 
