@@ -1,7 +1,7 @@
 <div align="center">
 <h1>aparato</h1>
 
-A pci.ids-compliant library for getting information about available PCI devices.
+A <a href="https://pci-ids.ucw.cz/">pci.ids</a>-compliant library for getting information about available PCI devices.
 
 <a href="https://crates.io/crates/aparato">
     <img src="https://img.shields.io/crates/v/aparato" alt="version" />
