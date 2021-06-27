@@ -177,9 +177,9 @@ impl Properties for LinuxPCIDevice {
         }
     }
 
-    /// This function sets the PCI device's `class_name` associated
-    /// with its `class_id` *as defined by **pci.ids***.
     fn set_class_name(&mut self) {
+        // This function sets the PCI device's `class_name` associated
+        // with its `class_id` *as defined by **pci.ids***.
         if !&self.class_id.is_empty() {
             self.class_name = match &self.class_id[..] {
                 "00" => DeviceClass::Unclassified.to_string(),
@@ -262,7 +262,6 @@ impl Fetch for LinuxPCIDevice {
 
 #[cfg(test)]
 mod tests {
-    // Note this useful idiom: importing names from outer (for mod tests) scope.
     use super::*;
 
     const PLACEHOLDER_PCI_DEVICE: &str = "/sys/bus/pci/devices/0000:00:00.0";

@@ -3,13 +3,37 @@ use crate::PCIDevice;
 use std::path::PathBuf;
 
 pub trait Properties {
-    /// This function returns a new instance of PCIDevice
+    /**
+    This function returns a new instance of `PCIDevice` struct using the given `path`.
+
+    ## Examples:
+    ```
+    // PCIDevice::new() can autocomplete the path to the PCIDevice
+    // if it isn't provided.
+
+    // The following statements all point to the same device.
+    let device_1 = PCIDevice::new("00:02.0");
+    let device_2 = PCIDevice::new("0000:00:02.0");
+    let device_3 = PCIDevice::new("/sys/bus/pci/devices/0000:00:02.0");
+    ```
+    */
     fn new(path: &str) -> Self;
-    /// After creating a new instance of PCIDevice, `init()` should be
-    /// run to fetch the data of the newly created instance.
+    /**
+    `PCIDevice::new()` calls this function to initialize the device's fields
+    by calling several *setters*.
+
+    The following are fields that init() sets for the caller:
+    - `address`
+    - `class_id`
+    - `vendor_id`
+    - `device_id`
+    - `class_name` 
+    - `numa_node`
+    */
     fn init(&mut self);
 
-    // -v- The getters -v-
+    // Getters...
+
     /// This function returns the `PCIDevice` path.
     fn path(&self) -> PathBuf;
 
@@ -37,32 +61,33 @@ pub trait Properties {
     /// This function returns the `PCIDevice` device name.
     fn device_name(&self) -> String;
 
-    // -v- The setters -v-
-    /// Set the `path` field of the struct that implements it
+    // Setters...
+
+    /// Set the `path` field of of the `PCIDevice`.
     fn set_path(&mut self, p: PathBuf);
 
-    /// This function sets the `address` field of the struct that implements it
+    /// This function sets the `address` field of the `PCIDevice`
     fn set_address(&mut self);
 
-    /// This function sets the `device_id` field of the struct that implements it
+    /// This function sets the `device_id` field of of the `PCIDevice`.
     fn set_class_id(&mut self);
 
-    /// This function sets the `device_id` field of the struct that implements it
+    /// This function sets the `device_id` field of of the `PCIDevice`.
     fn set_vendor_id(&mut self);
 
-    /// This function sets the `device_id` field of the struct that implements it
+    /// This function sets the `device_id` field of of the `PCIDevice`.
     fn set_device_id(&mut self);
 
-    /// This function sets the `numa_node` field of the struct that implements it
+    /// This function sets the `numa_node` field of of the `PCIDevice`.
     fn set_numa_node(&mut self);
 
-    /// This function sets the `class_name` field of the struct that implements it
+    /// This function sets the `class_name` field of of the `PCIDevice`.
     fn set_class_name(&mut self);
 
-    /// This function sets the `vendor_name` field of the struct that implements it
+    /// This function sets the `vendor_name` field of of the `PCIDevice`.
     fn set_vendor_name(&mut self, name: String);
 
-    /// This function sets the `device_name` field of the struct that implements it
+    /// This function sets the `device_name` field of of the `PCIDevice`.
     fn set_device_name(&mut self, name: String);
 }
 
