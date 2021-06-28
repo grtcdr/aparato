@@ -11,6 +11,9 @@ pub trait Properties {
     ///
     /// ## Examples:
     /// ```
+    /// use aparato::PCIDevice;
+    /// use aparato::traits::*;
+    ///
     /// // PCIDevice::new() can autocomplete the path to the PCIDevice
     /// // if it isn't provided.
     ///

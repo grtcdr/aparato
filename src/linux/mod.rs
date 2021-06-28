@@ -329,8 +329,16 @@ mod tests {
 
     #[test]
     fn test_class_name() {
-        let device = LinuxPCIDevice::new(PLACEHOLDER_PCI_DEVICE);
-        assert_ne!(device.class_name(), "");
+        let mut cls_name = String::new();
+        let devices = LinuxPCIDevice::fetch();
+        for device in devices {
+            if !device.class_name.is_empty() {
+                cls_name = device.class_name;
+                break;
+            }
+        }
+
+        assert_ne!(cls_name, "");  
     }
 
     #[test]
@@ -353,8 +361,16 @@ mod tests {
 
     #[test]
     fn test_device_name() {
-        let device = LinuxPCIDevice::new(PLACEHOLDER_PCI_DEVICE);
-        assert_ne!(device.device_name(), "");
+        let mut dev_name = String::new();
+        let devices = LinuxPCIDevice::fetch();
+        for device in devices {
+            if !device.device_name.is_empty() {
+                dev_name = device.device_name;
+                break;
+            }
+        }
+
+        assert_ne!(dev_name, "");        
     }
 
     #[test]
