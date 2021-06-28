@@ -8,24 +8,6 @@ const PATH_TO_PCI_DEVICES: &str = "/sys/bus/pci/devices/";
 /// This is where the pci.ids file is located.
 const PATH_TO_PCI_IDS: &str = "/usr/share/hwdata/pci.ids";
 
-impl Default for LinuxPCIDevice {
-    fn default() -> Self {
-        LinuxPCIDevice {
-            path: PathBuf::new(),
-            address: String::new(),
-            class_id: String::new(),
-            class_name: String::new(),
-            vendor_id: String::new(),
-            vendor_name: String::new(),
-            device_id: String::new(),
-            device_name: String::new(),
-            numa_node: -1,
-            enabled: false,
-            revision: String::new(),
-        }
-    }
-}
-
 #[derive(Debug)]
 pub struct LinuxPCIDevice {
     path: PathBuf,
@@ -106,6 +88,7 @@ impl Properties for LinuxPCIDevice {
         self.set_numa_node();
         self.set_class_name();
         self.set_enabled();
+        self.set_revision();
     }
 
     fn path(&self) -> PathBuf {
@@ -178,8 +161,8 @@ impl Properties for LinuxPCIDevice {
     fn set_vendor_id(&mut self) {
         if let Ok(mut str) = std::fs::read_to_string(&self.path.join("vendor")) {
             // This file is guaranteed to end with an EOL character, so let's remove that.
-            str = str.trim_start_matches("0x").to_string();
             str.pop();
+            str = str.trim_start_matches("0x").to_string();
             self.vendor_id = str;
         }
     }
@@ -187,16 +170,25 @@ impl Properties for LinuxPCIDevice {
     fn set_device_id(&mut self) {
         if let Ok(mut str) = std::fs::read_to_string(&self.path.join("device")) {
             // This file is guaranteed to end with an EOL character, so let's remove that.
-            str = str.trim_start_matches("0x").to_string();
             str.pop();
+            str = str.trim_start_matches("0x").to_string();
             self.device_id = str;
         }
     }
 
+    fn set_revision(&mut self) {
+        if let Ok(mut str) = std::fs::read_to_string(&self.path.join("revision")) {
+            // This file is guaranteed to end with an EOL character, so let's remove that.
+            str.pop();
+            str = str.trim_start_matches("0x").to_string();
+            self.revision = str;
+        }
+    }
+
     fn set_numa_node(&mut self) {
-        if let Ok(v) = std::fs::read_to_string(&self.path.join("numa_node")) {
-            if let Ok(p) = v.parse::<isize>() {
-                return self.numa_node = p;
+        if let Ok(str) = std::fs::read_to_string(&self.path.join("numa_node")) {
+            if let Ok(val) = str.parse::<isize>() {
+                self.numa_node = val;
             }
         }
     }
@@ -251,13 +243,22 @@ impl Properties for LinuxPCIDevice {
             }
         }
     }
+}
 
-    fn set_revision(&mut self) {
-        if let Ok(mut str) = std::fs::read_to_string(&self.path.join("revision")) {
-            // This file is guaranteed to end with an EOL character, so let's remove that.
-            str.pop();
-            str = str.trim_start_matches("0x").chars().take(2).collect();
-            self.class_id = str;
+impl Default for LinuxPCIDevice {
+    fn default() -> Self {
+        LinuxPCIDevice {
+            path: PathBuf::new(),
+            address: String::new(),
+            class_id: String::new(),
+            class_name: String::new(),
+            vendor_id: String::new(),
+            vendor_name: String::new(),
+            device_id: String::new(),
+            device_name: String::new(),
+            numa_node: -1,
+            enabled: false,
+            revision: String::new(),
         }
     }
 }
@@ -315,15 +316,15 @@ mod tests {
     const PLACEHOLDER_PCI_DEVICE: &str = "/sys/bus/pci/devices/0000:00:00.0";
 
     #[test]
-    fn test_address() {
-        let device = LinuxPCIDevice::new(PLACEHOLDER_PCI_DEVICE);
-        assert_ne!(device.address(), "");
-    }
-
-    #[test]
     fn test_path() {
         let device = LinuxPCIDevice::new(PLACEHOLDER_PCI_DEVICE);
         assert_ne!(device.path(), PathBuf::new());
+    }
+
+    #[test]
+    fn test_address() {
+        let device = LinuxPCIDevice::new(PLACEHOLDER_PCI_DEVICE);
+        assert_ne!(device.address(), "");
     }
 
     #[test]
@@ -366,5 +367,26 @@ mod tests {
     fn test_numa_node() {
         let device = LinuxPCIDevice::new(PLACEHOLDER_PCI_DEVICE);
         assert_ne!(device.numa_node().to_string(), "");
+    }
+
+    #[test]
+    fn test_revision() {
+        let device = LinuxPCIDevice::new(PLACEHOLDER_PCI_DEVICE);
+        assert_ne!(device.revision(), "");
+    }
+
+    #[test]
+    fn test_enabled() {
+        // We can't know for sure which devices are/aren't enabled, but we
+        // could perform a test to make sure that at least one device is.
+        let devices = LinuxPCIDevice::fetch();
+        let mut enabled = false;
+        for device in devices {
+            if device.enabled {
+                enabled = true;
+            }
+        }
+
+        assert_eq!(enabled, true);
     }
 }

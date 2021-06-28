@@ -1,7 +1,8 @@
 use std::fmt;
 
 /// Each `PCIDevice` has a class, and `DeviceClass`
-/// is the collection of all of them. \
+/// is the collection of all of them.
+///
 /// Keep in mind that:
 ///
 /// - The naming scheme of classes (enum variants) complies with that used by the PCI ID repository.

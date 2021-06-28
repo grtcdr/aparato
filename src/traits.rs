@@ -2,7 +2,7 @@ use crate::classes::DeviceClass;
 use crate::PCIDevice;
 use std::path::PathBuf;
 
-// A lot of methods are hidden due to the fact that the library 
+// A lot of methods are hidden due to the fact that the library
 // does most of the work behind the scenes, so there isn't a
 // reason for such functions to appear in the documentation.
 
@@ -29,7 +29,7 @@ pub trait Properties {
     /// - `class_id`
     /// - `vendor_id`
     /// - `device_id`
-    /// - `class_name` 
+    /// - `class_name`
     /// - `numa_node`
     #[doc(hidden)]
     fn init(&mut self);
