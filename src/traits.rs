@@ -9,7 +9,8 @@ use std::path::PathBuf;
 pub trait Properties {
     /// This function returns a new instance of `PCIDevice` struct using the given `path`.
     ///
-    /// ## Examples:
+    /// ## Examples
+    ///
     /// ```
     /// use aparato::PCIDevice;
     /// use aparato::traits::*;
@@ -70,7 +71,19 @@ pub trait Properties {
     fn enabled(&self) -> bool;
 
     /// This function returns whether the `PCIDevice` is enabled.
+    fn d3cold_allowed(&self) -> bool;
+
+    /// This function returns whether the `PCIDevice` is enabled.
     fn revision(&self) -> String;
+
+    /// This function returns the `PCIDevice` subsystem vendor.
+    fn subsystem_name(&self) -> String;
+
+    /// This function returns the `PCIDevice` subsystem vendor.
+    fn subsystem_vendor_id(&self) -> String;
+
+    /// This function returns the `PCIDevice` subsystem vendor.
+    fn subsystem_device_id(&self) -> String;
 
     // Setters...
 
@@ -110,6 +123,10 @@ pub trait Properties {
     #[doc(hidden)]
     fn set_enabled(&mut self);
 
+    /// This function sets the `d3cold_allowed` field of the `PCIDevice`.
+    #[doc(hidden)]
+    fn set_d3cold_allowed(&mut self);
+
     /// This function sets the `vendor_name` field of the `PCIDevice`.
     #[doc(hidden)]
     fn set_vendor_name(&mut self, name: String);
@@ -117,6 +134,18 @@ pub trait Properties {
     /// This function sets the `device_name` field of the `PCIDevice`.
     #[doc(hidden)]
     fn set_device_name(&mut self, name: String);
+
+    /// This function sets the `subsystem_vendor_id` field of the `PCIDevice`.
+    #[doc(hidden)]
+    fn set_subsystem_device_id(&mut self);
+
+    /// This function sets the `subsystem_device_id` field of the `PCIDevice`.
+    #[doc(hidden)]
+    fn set_subsystem_vendor_id(&mut self);
+
+    /// This function sets the `subsystem_name` field of the `PCIDevice`.
+    #[doc(hidden)]
+    fn set_subsystem_name(&mut self, name: String);
 }
 
 pub trait Fetch {
