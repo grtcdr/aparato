@@ -328,49 +328,15 @@ mod tests {
     }
 
     #[test]
-    fn test_class_name() {
-        let mut cls_name = String::new();
-        let devices = LinuxPCIDevice::fetch();
-        for device in devices {
-            if !device.class_name.is_empty() {
-                cls_name = device.class_name;
-                break;
-            }
-        }
-
-        assert_ne!(cls_name, "");  
-    }
-
-    #[test]
     fn test_class_id() {
         let device = LinuxPCIDevice::new(PLACEHOLDER_PCI_DEVICE);
         assert_ne!(device.device_id(), "");
     }
 
     #[test]
-    fn test_vendor_name() {
-        let device = LinuxPCIDevice::new(PLACEHOLDER_PCI_DEVICE);
-        assert_ne!(device.vendor_name(), "");
-    }
-
-    #[test]
     fn test_vendor_id() {
         let device = LinuxPCIDevice::new(PLACEHOLDER_PCI_DEVICE);
         assert_ne!(device.vendor_id(), "");
-    }
-
-    #[test]
-    fn test_device_name() {
-        let mut dev_name = String::new();
-        let devices = LinuxPCIDevice::fetch();
-        for device in devices {
-            if !device.device_name.is_empty() {
-                dev_name = device.device_name;
-                break;
-            }
-        }
-
-        assert_ne!(dev_name, "");        
     }
 
     #[test]
@@ -404,5 +370,29 @@ mod tests {
         }
 
         assert_eq!(enabled, true);
+    }
+
+    #[test]
+    fn test_class_name() {
+        let device = LinuxPCIDevice::new(PLACEHOLDER_PCI_DEVICE);
+        assert_ne!(device.class_name(), "");
+    }
+
+    #[test]
+    fn test_fetch() {
+        let devices = LinuxPCIDevice::fetch();
+        assert_ne!(devices.len(), 0);
+    }
+
+    #[test]
+    fn test_fetch_gpus() {
+        let gpus = LinuxPCIDevice::fetch_gpus();
+        assert_ne!(gpus.len(), 0);
+    }
+
+    #[test]
+    fn test_fetch_by_class() {
+        let devices = LinuxPCIDevice::fetch_by_class(DeviceClass::MassStorageController);
+        assert_ne!(devices.len(), 0);
     }
 }
