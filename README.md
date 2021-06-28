@@ -18,7 +18,7 @@ A <a href="https://pci-ids.ucw.cz/">pci.ids</a>-compliant library for getting in
 Add the following to your project's *Cargo.toml* file:
 
 ```toml
-aparato = "3.0.0"
+aparato = "3.0.0" # Be sure to use the latest version
 ```
 
 ### Examples
