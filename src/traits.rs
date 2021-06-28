@@ -40,47 +40,36 @@ pub trait Properties {
     // Getters...
 
     /// This function returns the `PCIDevice` path.
-    #[doc(hidden)]
     fn path(&self) -> PathBuf;
 
     /// This function returns the `PCIDevice` address.
-    #[doc(hidden)]
     fn address(&self) -> String;
 
     /// This function returns the `PCIDevice` class ID.
-    #[doc(hidden)]
     fn class_id(&self) -> String;
 
     /// This function returns the `PCIDevice` vendor ID.
-    #[doc(hidden)]
     fn vendor_id(&self) -> String;
 
     /// This function returns the `PCIDevice` device ID.
-    #[doc(hidden)]
     fn device_id(&self) -> String;
 
     /// This function returns the `PCIDevice` NUMA node.
-    #[doc(hidden)]
     fn numa_node(&self) -> isize;
 
     /// This function returns the `PCIDevice` class name.
-    #[doc(hidden)]
     fn class_name(&self) -> String;
 
     /// This function returns the `PCIDevice` vendor name.
-    #[doc(hidden)]
     fn vendor_name(&self) -> String;
 
     /// This function returns the `PCIDevice` device name.
-    #[doc(hidden)]
     fn device_name(&self) -> String;
 
     /// This function returns whether the `PCIDevice` is enabled.
-    #[doc(hidden)]
     fn enabled(&self) -> bool;
 
     /// This function returns whether the `PCIDevice` is enabled.
-    #[doc(hidden)]
     fn revision(&self) -> String;
 
     // Setters...
