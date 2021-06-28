@@ -8,6 +8,24 @@ const PATH_TO_PCI_DEVICES: &str = "/sys/bus/pci/devices/";
 /// This is where the pci.ids file is located.
 const PATH_TO_PCI_IDS: &str = "/usr/share/hwdata/pci.ids";
 
+impl Default for LinuxPCIDevice {
+    fn default() -> Self {
+        LinuxPCIDevice {
+            path: PathBuf::new(),
+            address: String::new(),
+            class_id: String::new(),
+            class_name: String::new(),
+            vendor_id: String::new(),
+            vendor_name: String::new(),
+            device_id: String::new(),
+            device_name: String::new(),
+            numa_node: -1,
+            enabled: false,
+            revision: String::new(),
+        }
+    }
+}
+
 #[derive(Debug)]
 pub struct LinuxPCIDevice {
     path: PathBuf,
@@ -19,23 +37,17 @@ pub struct LinuxPCIDevice {
     device_id: String,
     device_name: String,
     numa_node: isize,
+    enabled: bool,
+    revision: String,
 }
 
 impl Properties for LinuxPCIDevice {
     fn new(path: &str) -> Self {
         let mut path_vec = [path].to_vec();
 
-        let mut device = LinuxPCIDevice {
-            path: PathBuf::from(path_vec.concat()),
-            address: String::new(),
-            class_id: String::new(),
-            class_name: String::new(),
-            vendor_id: String::new(),
-            vendor_name: String::new(),
-            device_id: String::new(),
-            device_name: String::new(),
-            numa_node: -1,
-        };
+        let mut device: LinuxPCIDevice = Default::default();
+
+        device.set_path(PathBuf::from(path_vec.concat()));
 
         // One of the following two conditions will try to autocomplete the path of the
         // PCI device if the one provided doesn't point to a real path in the filesystem.
@@ -93,6 +105,7 @@ impl Properties for LinuxPCIDevice {
         self.set_device_id();
         self.set_numa_node();
         self.set_class_name();
+        self.set_enabled();
     }
 
     fn path(&self) -> PathBuf {
@@ -131,6 +144,14 @@ impl Properties for LinuxPCIDevice {
         self.device_name.to_owned()
     }
 
+    fn enabled(&self) -> bool {
+        self.enabled
+    }
+
+    fn revision(&self) -> String {
+        self.revision.to_owned()
+    }
+
     fn set_path(&mut self, p: PathBuf) {
         self.path = p;
     }
@@ -146,7 +167,8 @@ impl Properties for LinuxPCIDevice {
     }
 
     fn set_class_id(&mut self) {
-        if let Ok(mut str) = std::fs::read_to_string(&self.path().join("class")) {
+        if let Ok(mut str) = std::fs::read_to_string(&self.path.join("class")) {
+            // This file is guaranteed to end with an EOL character, so let's remove that.
             str.pop();
             str = str.trim_start_matches("0x").chars().take(2).collect();
             self.class_id = str;
@@ -154,7 +176,8 @@ impl Properties for LinuxPCIDevice {
     }
 
     fn set_vendor_id(&mut self) {
-        if let Ok(mut str) = std::fs::read_to_string(&self.path().join("vendor")) {
+        if let Ok(mut str) = std::fs::read_to_string(&self.path.join("vendor")) {
+            // This file is guaranteed to end with an EOL character, so let's remove that.
             str = str.trim_start_matches("0x").to_string();
             str.pop();
             self.vendor_id = str;
@@ -162,7 +185,8 @@ impl Properties for LinuxPCIDevice {
     }
 
     fn set_device_id(&mut self) {
-        if let Ok(mut str) = std::fs::read_to_string(&self.path().join("device")) {
+        if let Ok(mut str) = std::fs::read_to_string(&self.path.join("device")) {
+            // This file is guaranteed to end with an EOL character, so let's remove that.
             str = str.trim_start_matches("0x").to_string();
             str.pop();
             self.device_id = str;
@@ -170,7 +194,7 @@ impl Properties for LinuxPCIDevice {
     }
 
     fn set_numa_node(&mut self) {
-        if let Ok(v) = std::fs::read_to_string(&self.path().join("numa_node")) {
+        if let Ok(v) = std::fs::read_to_string(&self.path.join("numa_node")) {
             if let Ok(p) = v.parse::<isize>() {
                 return self.numa_node = p;
             }
@@ -214,6 +238,28 @@ impl Properties for LinuxPCIDevice {
     fn set_device_name(&mut self, name: String) {
         self.device_name = name;
     }
+
+    fn set_enabled(&mut self) {
+        if let Ok(mut str) = std::fs::read_to_string(&self.path.join("enable")) {
+            // This file is guaranteed to end with an EOL character, so let's remove that.
+            str.pop();
+            if let Ok(val) = str.parse::<usize>() {
+                match val {
+                    0 => self.enabled = false,
+                    _ => self.enabled = true,
+                }
+            }
+        }
+    }
+
+    fn set_revision(&mut self) {
+        if let Ok(mut str) = std::fs::read_to_string(&self.path.join("revision")) {
+            // This file is guaranteed to end with an EOL character, so let's remove that.
+            str.pop();
+            str = str.trim_start_matches("0x").chars().take(2).collect();
+            self.class_id = str;
+        }
+    }
 }
 
 impl std::fmt::Display for LinuxPCIDevice {
@@ -255,6 +301,8 @@ impl Fetch for LinuxPCIDevice {
                 let new_name = &whole_name[start_bytes + 1..end_bytes];
                 gpu.set_device_name(new_name.to_string());
             }
+
+            gpu.set_vendor_name(gpu.vendor_name().replace(" Corporation", ""));
         }
         gpus
     }
