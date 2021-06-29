@@ -55,25 +55,18 @@ impl Properties for LinuxPCIDevice {
         // This chunk of code is responsible for parsing the pci.ids file.
         if let Ok(lines) = read_lines(PATH_TO_PCI_IDS) {
             for line in lines {
-                if let Ok(l) = line {
-                    if l.len() == 0 || l.starts_with("#") || l.starts_with("C") {
-                        // Ignore empty lines, comments, and class definitions
-                        continue;
-                    } else if !l.starts_with("\t") {
+                if let Ok(l) = &line {
+                    if !l.len() == 0 && !l.starts_with("#") && !l.starts_with("C") {
                         // vendor parsing
-                        let vendor_id = l[..4].trim_start();
-                        let vendor_name = l[4..].trim_start();
-
-                        if device.vendor_id() == vendor_id {
-                            device.set_vendor_name(vendor_name.to_owned());
+                        if l.contains(&device.vendor_id()) {
+                            device.set_vendor_name(l[4..].trim_start().to_owned());
                         }
                     } else if l.starts_with("\t\t") {
                         // subsystem parsing
-                        let mut subdevice_name = l.to_owned();
-
-                        if subdevice_name.contains(&device.subsystem_vendor_id())
-                            && subdevice_name.contains(&device.subsystem_device_id())
+                        if l.contains(&device.subsystem_vendor_id())
+                            && l.contains(&device.subsystem_device_id())
                         {
+                            let mut subdevice_name = l.to_owned();
                             if l.contains(&device.subsystem_device_id) {
                                 subdevice_name =
                                     subdevice_name.replace(&device.subsystem_device_id(), "");
@@ -87,11 +80,8 @@ impl Properties for LinuxPCIDevice {
                         }
                     } else if l.starts_with("\t") {
                         // device parsing
-                        let device_id = l[..5].trim_start();
-                        let device_name = l[5..].trim_start();
-
-                        if device.device_id == device_id {
-                            device.set_device_name(device_name.to_owned());
+                        if l.contains(&device.device_id()) {
+                            device.set_device_name(l[5..].trim_start().to_owned());
                         }
                     }
                 }
@@ -206,48 +196,44 @@ impl Properties for LinuxPCIDevice {
     }
 
     fn set_class_id(&mut self) {
-        if let Ok(mut str) = std::fs::read_to_string(&self.path.join("class")) {
+        if let Ok(str) = std::fs::read_to_string(&self.path.join("class")) {
             // This file is guaranteed to end with an EOL character, so let's remove that.
-            str = str
+            self.class_id = str
                 .trim_start_matches("0x")
                 .trim_end_matches("\n")
                 .chars()
                 .take(2)
                 .collect();
-            self.class_id = str;
         }
     }
 
     fn set_vendor_id(&mut self) {
-        if let Ok(mut str) = std::fs::read_to_string(&self.path.join("vendor")) {
+        if let Ok(str) = std::fs::read_to_string(&self.path.join("vendor")) {
             // This file is guaranteed to end with an EOL character, so let's remove that.
-            str = str
+            self.vendor_id = str
                 .trim_start_matches("0x")
                 .trim_end_matches("\n")
                 .to_owned();
-            self.vendor_id = str;
         }
     }
 
     fn set_device_id(&mut self) {
-        if let Ok(mut str) = std::fs::read_to_string(&self.path.join("device")) {
+        if let Ok(str) = std::fs::read_to_string(&self.path.join("device")) {
             // This file is guaranteed to end with an EOL character, so let's remove that.
-            str = str
+            self.device_id = str
                 .trim_start_matches("0x")
                 .trim_end_matches("\n")
                 .to_owned();
-            self.device_id = str;
         }
     }
 
     fn set_revision(&mut self) {
-        if let Ok(mut str) = std::fs::read_to_string(&self.path.join("revision")) {
+        if let Ok(str) = std::fs::read_to_string(&self.path.join("revision")) {
             // This file is guaranteed to end with an EOL character, so let's remove that.
-            str = str
+            self.revision = str
                 .trim_start_matches("0x")
                 .trim_end_matches("\n")
                 .to_owned();
-            self.revision = str;
         }
     }
 
@@ -260,20 +246,22 @@ impl Properties for LinuxPCIDevice {
     }
 
     fn set_subsystem_vendor_id(&mut self) {
-        if let Ok(mut str) = std::fs::read_to_string(&self.path.join("subsystem_vendor")) {
+        if let Ok(str) = std::fs::read_to_string(&self.path.join("subsystem_vendor")) {
             // This file is guaranteed to end with an EOL character, so let's remove that.
-            str.pop();
-            str = str.trim_start_matches("0x").to_owned();
-            self.subsystem_vendor_id = str;
+            self.subsystem_vendor_id = str
+                .trim_start_matches("0x")
+                .trim_end_matches("\n")
+                .to_owned();
         }
     }
 
     fn set_subsystem_device_id(&mut self) {
-        if let Ok(mut str) = std::fs::read_to_string(&self.path.join("subsystem_device")) {
+        if let Ok(str) = std::fs::read_to_string(&self.path.join("subsystem_device")) {
             // This file is guaranteed to end with an EOL character, so let's remove that.
-            str.pop();
-            str = str.trim_start_matches("0x").to_string();
-            self.subsystem_device_id = str;
+            self.subsystem_device_id = str
+                .trim_start_matches("0x")
+                .trim_end_matches("\n")
+                .to_string();
         }
     }
 
