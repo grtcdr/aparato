@@ -1,4 +1,5 @@
 use crate::classes::*;
+use crate::extra;
 use crate::extra::*;
 use crate::traits::*;
 use std::path::PathBuf;
@@ -29,66 +30,19 @@ pub struct LinuxPCIDevice {
 
 impl Properties for LinuxPCIDevice {
     fn new(path: &str) -> Self {
-        let mut path_vec = [path].to_vec();
-
         let mut device: LinuxPCIDevice = Default::default();
-
-        device.set_path(PathBuf::from(path_vec.concat()));
-
+        let autocompleted_path = extra::autocomplete_path(path);
         // One of the following two conditions will try to autocomplete the path of the
         // PCI device if the one provided doesn't point to a real path in the filesystem.
         //   e.g.  0000:00:00.0 ->  /sys/bus/pci/devices/0000:00:00.0
         //         00:00.0      ->  /sys/bus/pci/devices/0000:00:00.0
-        if !PathBuf::from(path_vec.concat()).is_dir() {
-            path_vec.insert(0, PATH_TO_PCI_DEVICES);
-            device.path = PathBuf::from(path_vec.concat());
-            if !PathBuf::from(path_vec.concat()).is_dir() {
-                let mut id = path.to_owned();
-                id.insert_str(0, "0000:");
-                std::mem::swap(&mut path_vec[1], &mut id.as_str());
-                device.path = PathBuf::from(path_vec.concat());
-            }
-        }
+        device.set_path(autocompleted_path);
 
         Self::init(&mut device);
 
-        // This chunk of code is responsible for parsing the pci.ids file.
-        if let Ok(lines) = read_lines(PATH_TO_PCI_IDS) {
-            for line in lines {
-                if let Ok(l) = &line {
-                    if !l.len() == 0 && !l.starts_with("#") && !l.starts_with("C") {
-                        // vendor parsing
-                        if l.contains(&device.vendor_id()) {
-                            device.set_vendor_name(l[4..].trim_start().to_owned());
-                        }
-                    } else if l.starts_with("\t\t") {
-                        // subsystem parsing
-                        if l.contains(&device.subsystem_vendor_id())
-                            && l.contains(&device.subsystem_device_id())
-                        {
-                            let mut subdevice_name = l.to_owned();
-                            if l.contains(&device.subsystem_device_id) {
-                                subdevice_name =
-                                    subdevice_name.replace(&device.subsystem_device_id(), "");
-                            }
+        Self::parse_pciids(&mut device);
 
-                            if l.contains(&device.subsystem_vendor_id()) {
-                                subdevice_name =
-                                    subdevice_name.replace(&device.subsystem_vendor_id(), "")
-                            }
-                            device.set_subsystem_name(subdevice_name.trim().to_owned());
-                        }
-                    } else if l.starts_with("\t") {
-                        // device parsing
-                        if l.contains(&device.device_id()) {
-                            device.set_device_name(l[5..].trim_start().to_owned());
-                        }
-                    }
-                }
-            }
-        }
-
-        return device;
+        device
     }
 
     fn init(&mut self) {
@@ -119,6 +73,44 @@ impl Properties for LinuxPCIDevice {
         self.set_subsystem_device_id();
         // This is extracted from the subsystem_vendor file.
         self.set_subsystem_vendor_id();
+    }
+
+    fn parse_pciids(&mut self) {
+        // This chunk of code is responsible for parsing the pci.ids file.
+        if let Ok(lines) = read_lines(PATH_TO_PCI_IDS) {
+            for line in lines {
+                if let Ok(l) = &line {
+                    if !l.len() == 0 && !l.starts_with("#") && !l.starts_with("C") {
+                        // vendor parsing
+                        if l.contains(&self.vendor_id()) {
+                            &self.set_vendor_name(l[4..].trim_start().to_owned());
+                        }
+                    } else if l.starts_with("\t\t") {
+                        // subsystem parsing
+                        if l.contains(&self.subsystem_vendor_id())
+                            && l.contains(&self.subsystem_device_id())
+                        {
+                            let mut subdevice_name = l.to_owned();
+                            if l.contains(&self.subsystem_device_id) {
+                                subdevice_name =
+                                    subdevice_name.replace(&self.subsystem_device_id(), "");
+                            }
+
+                            if l.contains(&self.subsystem_vendor_id()) {
+                                subdevice_name =
+                                    subdevice_name.replace(&self.subsystem_vendor_id(), "")
+                            }
+                            &self.set_subsystem_name(subdevice_name.trim().to_owned());
+                        }
+                    } else if l.starts_with("\t") {
+                        // device parsing
+                        if l.contains(&self.device_id()) {
+                            &self.set_device_name(l[5..].trim_start().to_owned());
+                        }
+                    }
+                }
+            }
+        }
     }
 
     fn path(&self) -> PathBuf {
@@ -383,7 +375,7 @@ impl Fetch for LinuxPCIDevice {
     }
 
     fn fetch_gpus() -> Vec<LinuxPCIDevice> {
-        let mut gpus: Vec<LinuxPCIDevice> = Self::fetch_by_class(DeviceClass::DisplayController);
+        let mut gpus = Self::fetch_by_class(DeviceClass::DisplayController);
         for gpu in &mut gpus {
             let whole_name = gpu.device_name();
             if let Some(start_bytes) = whole_name.find("[") {
