@@ -84,7 +84,7 @@ pub trait Properties {
 
     /// This function returns the `PCIDevice` subsystem vendor.
     fn subsystem_device_id(&self) -> String;
-    
+
     // Setters...
 
     /// Set the `path` field of the `PCIDevice`.

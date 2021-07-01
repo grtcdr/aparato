@@ -264,7 +264,7 @@ impl Properties for LinuxPCIDevice {
                         continue;
                     } else if !l.starts_with("\t") {
                         if l.contains(&self.vendor_id()) {
-                            self.vendor_name =  l[4..].trim_start().to_owned();
+                            self.vendor_name = l[4..].trim_start().to_owned();
                         }
                     }
                 }
@@ -300,17 +300,11 @@ impl Properties for LinuxPCIDevice {
                         if l.contains(&self.subsystem_vendor_id())
                             && l.contains(&self.subsystem_device_id())
                         {
-                            let mut subdevice_name = l.to_owned();
-                            if l.contains(&self.subsystem_device_id) {
-                                subdevice_name =
-                                    subdevice_name.replace(&self.subsystem_device_id(), "");
-                            }
-
-                            if l.contains(&self.subsystem_vendor_id()) {
-                                subdevice_name =
-                                    subdevice_name.replace(&self.subsystem_vendor_id(), "")
-                            }
-                            self.subsystem_name = subdevice_name.trim().to_owned();
+                            self.subsystem_name = l
+                                .replace(&self.subsystem_device_id, "")
+                                .replace(&self.subsystem_vendor_id, "")
+                                .trim()
+                                .to_owned();
                         }
                     }
                 }
