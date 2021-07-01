@@ -84,10 +84,7 @@ pub trait Properties {
 
     /// This function returns the `PCIDevice` subsystem vendor.
     fn subsystem_device_id(&self) -> String;
-
-    /// This function parses the *pci.ids* file to set all `*_name` fields of a `PCIDevice`.
-    fn parse_pciids(&mut self);
-
+    
     // Setters...
 
     /// Set the `path` field of the `PCIDevice`.
@@ -132,11 +129,11 @@ pub trait Properties {
 
     /// This function sets the `vendor_name` field of the `PCIDevice`.
     #[doc(hidden)]
-    fn set_vendor_name(&mut self, name: String);
+    fn set_vendor_name(&mut self);
 
     /// This function sets the `device_name` field of the `PCIDevice`.
     #[doc(hidden)]
-    fn set_device_name(&mut self, name: String);
+    fn set_device_name(&mut self);
 
     /// This function sets the `subsystem_vendor_id` field of the `PCIDevice`.
     #[doc(hidden)]
@@ -148,7 +145,7 @@ pub trait Properties {
 
     /// This function sets the `subsystem_name` field of the `PCIDevice`.
     #[doc(hidden)]
-    fn set_subsystem_name(&mut self, name: String);
+    fn set_subsystem_name(&mut self);
 }
 
 pub trait Fetch {

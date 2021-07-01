@@ -1,5 +1,4 @@
 use crate::classes::*;
-use crate::extra;
 use crate::extra::*;
 use crate::traits::*;
 use std::path::PathBuf;
@@ -30,17 +29,25 @@ pub struct LinuxPCIDevice {
 
 impl Properties for LinuxPCIDevice {
     fn new(path: &str) -> Self {
+        let mut path_vec = [path].to_vec();
         let mut device: LinuxPCIDevice = Default::default();
-        let autocompleted_path = extra::autocomplete_path(path);
+
         // One of the following two conditions will try to autocomplete the path of the
         // PCI device if the one provided doesn't point to a real path in the filesystem.
         //   e.g.  0000:00:00.0 ->  /sys/bus/pci/devices/0000:00:00.0
         //         00:00.0      ->  /sys/bus/pci/devices/0000:00:00.0
-        device.set_path(autocompleted_path);
+        if !PathBuf::from(path_vec.concat()).is_dir() {
+            path_vec.insert(0, PATH_TO_PCI_DEVICES);
+            device.path = PathBuf::from(path_vec.concat());
+            if !PathBuf::from(path_vec.concat()).is_dir() {
+                let mut id = path.to_owned();
+                id.insert_str(0, "0000:");
+                std::mem::swap(&mut path_vec[1], &mut id.as_str());
+                device.path = PathBuf::from(path_vec.concat());
+            }
+        }
 
         Self::init(&mut device);
-
-        Self::parse_pciids(&mut device);
 
         device
     }
@@ -73,44 +80,6 @@ impl Properties for LinuxPCIDevice {
         self.set_subsystem_device_id();
         // This is extracted from the subsystem_vendor file.
         self.set_subsystem_vendor_id();
-    }
-
-    fn parse_pciids(&mut self) {
-        // This chunk of code is responsible for parsing the pci.ids file.
-        if let Ok(lines) = read_lines(PATH_TO_PCI_IDS) {
-            for line in lines {
-                if let Ok(l) = &line {
-                    if !l.len() == 0 && !l.starts_with("#") && !l.starts_with("C") {
-                        // vendor parsing
-                        if l.contains(&self.vendor_id()) {
-                            &self.set_vendor_name(l[4..].trim_start().to_owned());
-                        }
-                    } else if l.starts_with("\t\t") {
-                        // subsystem parsing
-                        if l.contains(&self.subsystem_vendor_id())
-                            && l.contains(&self.subsystem_device_id())
-                        {
-                            let mut subdevice_name = l.to_owned();
-                            if l.contains(&self.subsystem_device_id) {
-                                subdevice_name =
-                                    subdevice_name.replace(&self.subsystem_device_id(), "");
-                            }
-
-                            if l.contains(&self.subsystem_vendor_id()) {
-                                subdevice_name =
-                                    subdevice_name.replace(&self.subsystem_vendor_id(), "")
-                            }
-                            &self.set_subsystem_name(subdevice_name.trim().to_owned());
-                        }
-                    } else if l.starts_with("\t") {
-                        // device parsing
-                        if l.contains(&self.device_id()) {
-                            &self.set_device_name(l[5..].trim_start().to_owned());
-                        }
-                    }
-                }
-            }
-        }
     }
 
     fn path(&self) -> PathBuf {
@@ -287,16 +256,66 @@ impl Properties for LinuxPCIDevice {
         }
     }
 
-    fn set_vendor_name(&mut self, name: String) {
-        self.vendor_name = name;
+    fn set_vendor_name(&mut self) {
+        if let Ok(lines) = read_lines(PATH_TO_PCI_IDS) {
+            for line in lines {
+                if let Ok(l) = &line {
+                    if l.len() == 0 && l.starts_with("#") && l.starts_with("C") {
+                        continue;
+                    } else if !l.starts_with("\t") {
+                        if l.contains(&self.vendor_id()) {
+                            self.vendor_name =  l[4..].trim_start().to_owned();
+                        }
+                    }
+                }
+            }
+        }
     }
 
-    fn set_device_name(&mut self, name: String) {
-        self.device_name = name;
+    fn set_device_name(&mut self) {
+        if let Ok(lines) = read_lines(PATH_TO_PCI_IDS) {
+            for line in lines {
+                if let Ok(l) = &line {
+                    if l.len() == 0 && l.starts_with("#") && l.starts_with("C") {
+                        continue;
+                    } else if l.starts_with("\t") {
+                        // device parsing
+                        if l.contains(&self.device_id()) {
+                            self.device_name = l[5..].trim_start().to_owned();
+                        }
+                    }
+                }
+            }
+        }
     }
 
-    fn set_subsystem_name(&mut self, name: String) {
-        self.subsystem_name = name;
+    fn set_subsystem_name(&mut self) {
+        if let Ok(lines) = read_lines(PATH_TO_PCI_IDS) {
+            for line in lines {
+                if let Ok(l) = &line {
+                    if l.len() == 0 && l.starts_with("#") && l.starts_with("C") {
+                        continue;
+                    } else if l.starts_with("\t\t") {
+                        // subsystem parsing
+                        if l.contains(&self.subsystem_vendor_id())
+                            && l.contains(&self.subsystem_device_id())
+                        {
+                            let mut subdevice_name = l.to_owned();
+                            if l.contains(&self.subsystem_device_id) {
+                                subdevice_name =
+                                    subdevice_name.replace(&self.subsystem_device_id(), "");
+                            }
+
+                            if l.contains(&self.subsystem_vendor_id()) {
+                                subdevice_name =
+                                    subdevice_name.replace(&self.subsystem_vendor_id(), "")
+                            }
+                            self.subsystem_name = subdevice_name.trim().to_owned();
+                        }
+                    }
+                }
+            }
+        }
     }
 
     fn set_enabled(&mut self) {
@@ -380,11 +399,11 @@ impl Fetch for LinuxPCIDevice {
             let whole_name = gpu.device_name();
             if let Some(start_bytes) = whole_name.find("[") {
                 if let Some(end_bytes) = whole_name.rfind("]") {
-                    gpu.set_device_name(whole_name[start_bytes + 1..end_bytes].to_owned());
+                    gpu.device_name = whole_name[start_bytes + 1..end_bytes].to_owned();
                 }
             }
             if gpu.vendor_name().contains("Corporation") {
-                gpu.set_vendor_name(gpu.vendor_name().replace(" Corporation", ""));
+                gpu.vendor_name = gpu.vendor_name().replace(" Corporation", "");
             }
         }
         gpus
@@ -395,7 +414,7 @@ impl Fetch for LinuxPCIDevice {
 mod tests {
     use super::*;
 
-    const PLACEHOLDER_PCI_DEVICE: &str = "/sys/bus/pci/devices/0000:00:00.0";
+    const PLACEHOLDER_PCI_DEVICE: &str = "0000:00:00.0";
 
     #[test]
     fn test_path() {
