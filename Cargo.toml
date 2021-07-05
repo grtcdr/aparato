@@ -11,3 +11,4 @@ readme = "README.md"
 
 [dependencies]
 cfg-if = "1.0.0"
+hex = "0.4.3"

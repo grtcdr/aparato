@@ -1,4 +1,5 @@
 use crate::classes::*;
+use crate::subclasses::*;
 use crate::extra::*;
 use crate::traits::*;
 use std::path::PathBuf;
@@ -12,18 +13,18 @@ const PATH_TO_PCI_IDS: &str = "/usr/share/hwdata/pci.ids";
 pub struct LinuxPCIDevice {
     path: PathBuf,
     address: String,
-    class_id: String,
+    class_id: Vec<u8>,
     class_name: String,
-    vendor_id: String,
+    vendor_id: Vec<u8>,
     vendor_name: String,
-    device_id: String,
+    device_id: Vec<u8>,
     device_name: String,
-    revision: String,
+    revision: Vec<u8>,
     numa_node: isize,
     enabled: bool,
     d3cold_allowed: bool,
-    subsystem_vendor_id: String,
-    subsystem_device_id: String,
+    subsystem_vendor_id: Vec<u8>,
+    subsystem_device_id: Vec<u8>,
     subsystem_name: String,
 }
 
@@ -53,33 +54,17 @@ impl Properties for LinuxPCIDevice {
     }
 
     fn init(&mut self) {
-        // This function sets the values of a PCIDevice
-        // which are read from files within its path.
-
-        // This is extracted from the path file.
         self.set_address();
-        // This is extracted from the class file.
         self.set_class_id();
-        // This is extracted from the vendor file.
         self.set_vendor_id();
-        // This is extracted from the device file.
         self.set_device_id();
-        // This is extracted from the numa_node file.
         self.set_numa_node();
-        // After class_id is extracted, we associate the class_id
-        // with its appropriate class name (as defined by pci.ids)
-        // and lastly, we assign it to the PCIDevice's class_name field.
-        self.set_class_name();
-        // This is extracted from the enable file.
         self.set_enabled();
-        // This is extracted from the d3cold_allowed file.
         self.set_d3cold_allowed();
-        // This is extracted from the revision file.
         self.set_revision();
-        // This is extracted from the subsystem_device file.
         self.set_subsystem_device_id();
-        // This is extracted from the subsystem_vendor file.
         self.set_subsystem_vendor_id();
+        self.set_class_name();
     }
 
     fn path(&self) -> PathBuf {
@@ -90,15 +75,15 @@ impl Properties for LinuxPCIDevice {
         self.address.to_owned()
     }
 
-    fn class_id(&self) -> String {
+    fn class_id(&self) -> Vec<u8> {
         self.class_id.to_owned()
     }
 
-    fn vendor_id(&self) -> String {
+    fn vendor_id(&self) -> Vec<u8> {
         self.vendor_id.to_owned()
     }
 
-    fn device_id(&self) -> String {
+    fn device_id(&self) -> Vec<u8> {
         self.device_id.to_owned()
     }
 
@@ -126,7 +111,7 @@ impl Properties for LinuxPCIDevice {
         self.d3cold_allowed
     }
 
-    fn revision(&self) -> String {
+    fn revision(&self) -> Vec<u8> {
         self.revision.to_owned()
     }
 
@@ -134,11 +119,11 @@ impl Properties for LinuxPCIDevice {
         self.subsystem_name.to_owned()
     }
 
-    fn subsystem_vendor_id(&self) -> String {
+    fn subsystem_vendor_id(&self) -> Vec<u8> {
         self.subsystem_vendor_id.to_owned()
     }
 
-    fn subsystem_device_id(&self) -> String {
+    fn subsystem_device_id(&self) -> Vec<u8> {
         self.subsystem_device_id.to_owned()
     }
 
@@ -158,101 +143,81 @@ impl Properties for LinuxPCIDevice {
 
     fn set_class_id(&mut self) {
         if let Ok(str) = std::fs::read_to_string(&self.path.join("class")) {
-            // This file is guaranteed to end with an EOL character, so let's remove that.
-            self.class_id = str
-                .trim_start_matches("0x")
-                .trim_end_matches("\n")
-                .chars()
-                .take(2)
-                .collect();
+            let new_str = str.trim_start_matches("0x").trim_end_matches("\n");
+            if let Ok(decoded) = hex::decode(&new_str[..4]) {
+                self.class_id = decoded;
+            }
         }
     }
 
     fn set_vendor_id(&mut self) {
         if let Ok(str) = std::fs::read_to_string(&self.path.join("vendor")) {
-            // This file is guaranteed to end with an EOL character, so let's remove that.
-            self.vendor_id = str
-                .trim_start_matches("0x")
-                .trim_end_matches("\n")
-                .to_owned();
+            let prefixless = str.trim_start_matches("0x").trim_end_matches("\n");
+            self.vendor_id = prefixless.as_bytes().to_vec();
         }
     }
 
     fn set_device_id(&mut self) {
         if let Ok(str) = std::fs::read_to_string(&self.path.join("device")) {
-            // This file is guaranteed to end with an EOL character, so let's remove that.
-            self.device_id = str
-                .trim_start_matches("0x")
-                .trim_end_matches("\n")
-                .to_owned();
+            let prefixless = str.trim_start_matches("0x").trim_end_matches("\n");
+            self.device_id = prefixless.as_bytes().to_vec();
         }
     }
 
     fn set_revision(&mut self) {
         if let Ok(str) = std::fs::read_to_string(&self.path.join("revision")) {
-            // This file is guaranteed to end with an EOL character, so let's remove that.
-            self.revision = str
-                .trim_start_matches("0x")
-                .trim_end_matches("\n")
-                .to_owned();
+            let prefixless = str.trim_start_matches("0x").trim_end_matches("\n");
+            self.revision = prefixless.as_bytes().to_vec();
         }
     }
 
     fn set_numa_node(&mut self) {
         if let Ok(str) = std::fs::read_to_string(&self.path.join("numa_node")) {
-            if let Ok(val) = str.parse::<isize>() {
-                self.numa_node = val;
+            let prefixless = str.trim_start_matches("0x").trim_end_matches("\n");
+            if let Ok(v) = prefixless.parse::<isize>() {
+                self.numa_node = v;
             }
         }
     }
 
     fn set_subsystem_vendor_id(&mut self) {
         if let Ok(str) = std::fs::read_to_string(&self.path.join("subsystem_vendor")) {
-            // This file is guaranteed to end with an EOL character, so let's remove that.
-            self.subsystem_vendor_id = str
-                .trim_start_matches("0x")
-                .trim_end_matches("\n")
-                .to_owned();
+            let prefixless = str.trim_start_matches("0x").trim_end_matches("\n");
+            self.subsystem_vendor_id = prefixless.as_bytes().to_vec();
         }
     }
 
     fn set_subsystem_device_id(&mut self) {
         if let Ok(str) = std::fs::read_to_string(&self.path.join("subsystem_device")) {
-            // This file is guaranteed to end with an EOL character, so let's remove that.
-            self.subsystem_device_id = str
-                .trim_start_matches("0x")
-                .trim_end_matches("\n")
-                .to_string();
+            let prefixless = str.trim_start_matches("0x").trim_end_matches("\n");
+            self.subsystem_device_id = prefixless.as_bytes().to_vec();
         }
     }
 
     fn set_class_name(&mut self) {
-        // This function sets the PCI device's `class_name` associated
-        // with its `class_id` *as defined by **pci.ids***.
-        if !&self.class_id.is_empty() {
-            self.class_name = match &self.class_id[..] {
-                "00" => DeviceClass::Unclassified.to_string(),
-                "01" => DeviceClass::MassStorageController.to_string(),
-                "02" => DeviceClass::NetworkController.to_string(),
-                "03" => DeviceClass::DisplayController.to_string(),
-                "04" => DeviceClass::MultimediaController.to_string(),
-                "05" => DeviceClass::MemoryController.to_string(),
-                "06" => DeviceClass::PCIBridge.to_string(),
-                "07" => DeviceClass::CommunicationController.to_string(),
-                "08" => DeviceClass::GenericSystemPeripheral.to_string(),
-                "09" => DeviceClass::InputDeviceController.to_string(),
-                "0a" => DeviceClass::DockingStation.to_string(),
-                "0b" => DeviceClass::Processor.to_string(),
-                "0c" => DeviceClass::SerialBusController.to_string(),
-                "0d" => DeviceClass::WirelessController.to_string(),
-                "0e" => DeviceClass::IntelligentController.to_string(),
-                "0f" => DeviceClass::SatelliteCommunicationsController.to_string(),
-                "10" => DeviceClass::EncryptionController.to_string(),
-                "11" => DeviceClass::SignalProcessingController.to_string(),
-                "12" => DeviceClass::ProcessingAccelerators.to_string(),
-                "13" => DeviceClass::NonEssentialInstrumentation.to_string(),
-                _ => DeviceClass::Unknown.to_string(),
-            }
+        // Associate class_id with class_name
+        self.class_name = match (&self.class_id[0], &self.class_id[1]) {
+            (1, subclass) => DeviceSubclass::MassStorageController(*subclass).to_string(),
+            (2, _) => DeviceClass::NetworkController.to_string(),
+            (3, subclass) => DeviceSubclass::DisplayController(*subclass).to_string(),
+            (4, _) => DeviceClass::MultimediaController.to_string(),
+            (5, _) => DeviceClass::MemoryController.to_string(),
+            (6, _) => DeviceClass::Bridge.to_string(),
+            (7, _) => DeviceClass::CommunicationController.to_string(),
+            (8, _) => DeviceClass::GenericSystemPeripheral.to_string(),
+            (9, _) => DeviceClass::InputDeviceController.to_string(),
+            (10, _) => DeviceClass::DockingStation.to_string(),
+            (11, _) => DeviceClass::Processor.to_string(),
+            (12, _) => DeviceClass::SerialBusController.to_string(),
+            (13, _) => DeviceClass::WirelessController.to_string(),
+            (14, _) => DeviceClass::IntelligentController.to_string(),
+            (15, _) => DeviceClass::SatelliteCommunicationsController.to_string(),
+            (16, _) => DeviceClass::EncryptionController.to_string(),
+            (17, _) => DeviceClass::SignalProcessingController.to_string(),
+            (18, _) => DeviceClass::ProcessingAccelerators.to_string(),
+            (19, _) => DeviceClass::NonEssentialInstrumentation.to_string(),
+            (64, _) => DeviceClass::Unassigned.to_string(),
+            _ => DeviceClass::Unclassified.to_string(),
         }
     }
 
@@ -263,7 +228,10 @@ impl Properties for LinuxPCIDevice {
                     if l.len() == 0 && l.starts_with("#") && l.starts_with("C") {
                         continue;
                     } else if !l.starts_with("\t") {
-                        if l.contains(&self.vendor_id()) {
+                        // vendor parsing
+                        let a = &self.vendor_id[..];
+                        let ven_in_hex = format!("{:x?}", a);
+                        if l.contains(&ven_in_hex) {
                             self.vendor_name = l[4..].trim_start().to_owned();
                         }
                     }
@@ -280,7 +248,8 @@ impl Properties for LinuxPCIDevice {
                         continue;
                     } else if l.starts_with("\t") {
                         // device parsing
-                        if l.contains(&self.device_id()) {
+                        let dev_in_hex = format!("{:x?}", &self.device_id);
+                        if l.contains(&dev_in_hex) {
                             self.device_name = l[5..].trim_start().to_owned();
                         }
                     }
@@ -297,12 +266,12 @@ impl Properties for LinuxPCIDevice {
                         continue;
                     } else if l.starts_with("\t\t") {
                         // subsystem parsing
-                        if l.contains(&self.subsystem_vendor_id())
-                            && l.contains(&self.subsystem_device_id())
-                        {
+                        let subvendor_in_hex = &format!("{:x?}", &self.subsystem_vendor_id);
+                        let subdevice_in_hex = &format!("{:x?}", &self.subsystem_device_id);
+                        if l.contains(subdevice_in_hex) && l.contains(subvendor_in_hex) {
                             self.subsystem_name = l
-                                .replace(&self.subsystem_device_id, "")
-                                .replace(&self.subsystem_vendor_id, "")
+                                .replace(subvendor_in_hex, "")
+                                .replace(subdevice_in_hex, "")
                                 .trim()
                                 .to_owned();
                         }
@@ -314,8 +283,8 @@ impl Properties for LinuxPCIDevice {
 
     fn set_enabled(&mut self) {
         if let Ok(str) = std::fs::read_to_string(&self.path.join("enable")) {
-            match &str[..] {
-                "0\n" => self.enabled = false,
+            match &str[..1] {
+                "0" => self.enabled = false,
                 _ => self.enabled = true,
             }
         }
@@ -323,8 +292,8 @@ impl Properties for LinuxPCIDevice {
 
     fn set_d3cold_allowed(&mut self) {
         if let Ok(str) = std::fs::read_to_string(&self.path.join("d3cold_allowed")) {
-            match &str[..] {
-                "0\n" => self.d3cold_allowed = false,
+            match &str[..1] {
+                "0" => self.d3cold_allowed = false,
                 _ => self.d3cold_allowed = true,
             }
         }
@@ -336,18 +305,18 @@ impl Default for LinuxPCIDevice {
         LinuxPCIDevice {
             path: PathBuf::new(),
             address: String::new(),
-            class_id: String::new(),
+            class_id: vec![],
             class_name: String::new(),
-            vendor_id: String::new(),
+            vendor_id: vec![],
             vendor_name: String::new(),
-            device_id: String::new(),
+            device_id: vec![],
             device_name: String::new(),
             numa_node: -1,
             d3cold_allowed: false,
             enabled: false,
-            revision: String::new(),
-            subsystem_vendor_id: String::new(),
-            subsystem_device_id: String::new(),
+            revision: vec![],
+            subsystem_vendor_id: vec![],
+            subsystem_device_id: vec![],
             subsystem_name: String::new(),
         }
     }
@@ -355,7 +324,7 @@ impl Default for LinuxPCIDevice {
 
 impl std::fmt::Display for LinuxPCIDevice {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "{}", self.address)
+        write!(f, "Path: {:?}\nAddress: {}\nClass Name: {}\nClass ID: {}", self.path, self.address, self.class_name, format!("{:x?}", self.class_id))
     }
 }
 
@@ -408,7 +377,7 @@ impl Fetch for LinuxPCIDevice {
 mod tests {
     use super::*;
 
-    const PLACEHOLDER_PCI_DEVICE: &str = "0000:00:00.0";
+    const PLACEHOLDER_PCI_DEVICE: &str = "00:00.0";
 
     #[test]
     fn test_path() {
@@ -425,19 +394,19 @@ mod tests {
     #[test]
     fn test_class_id() {
         let device = LinuxPCIDevice::new(PLACEHOLDER_PCI_DEVICE);
-        assert_ne!(device.device_id(), "");
+        assert_ne!(device.device_id(), 0);
     }
 
     #[test]
     fn test_vendor_id() {
         let device = LinuxPCIDevice::new(PLACEHOLDER_PCI_DEVICE);
-        assert_ne!(device.vendor_id(), "");
+        assert_ne!(device.vendor_id(), 0);
     }
 
     #[test]
     fn test_device_id() {
         let device = LinuxPCIDevice::new(PLACEHOLDER_PCI_DEVICE);
-        assert_ne!(device.device_id(), "");
+        assert_ne!(device.device_id(), 0);
     }
 
     #[test]
@@ -449,19 +418,19 @@ mod tests {
     #[test]
     fn test_revision() {
         let device = LinuxPCIDevice::new(PLACEHOLDER_PCI_DEVICE);
-        assert_ne!(device.revision(), "");
+        assert_ne!(device.revision(), 0);
     }
 
     #[test]
     fn test_subsystem_vendor_id() {
         let device = LinuxPCIDevice::new(PLACEHOLDER_PCI_DEVICE);
-        assert_ne!(device.subsystem_vendor_id(), "");
+        assert_ne!(device.subsystem_vendor_id(), 0);
     }
 
     #[test]
     fn test_subsystem_device_id() {
         let device = LinuxPCIDevice::new(PLACEHOLDER_PCI_DEVICE);
-        assert_ne!(device.subsystem_device_id(), "");
+        assert_ne!(device.subsystem_device_id(), 0);
     }
 
     #[test]

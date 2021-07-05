@@ -17,6 +17,6 @@ cfg_if::cfg_if! {
 }
 
 pub mod classes;
-#[doc(hidden)]
 mod extra;
+pub mod subclasses;
 pub mod traits;
