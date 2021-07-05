@@ -1,5 +1,4 @@
 use crate::classes::*;
-use crate::subclasses::*;
 use crate::extra::*;
 use crate::traits::*;
 use std::path::PathBuf;
@@ -197,27 +196,27 @@ impl Properties for LinuxPCIDevice {
     fn set_class_name(&mut self) {
         // Associate class_id with class_name
         self.class_name = match (&self.class_id[0], &self.class_id[1]) {
-            (1, subclass) => DeviceSubclass::MassStorageController(*subclass).to_string(),
-            (2, _) => DeviceClass::NetworkController.to_string(),
-            (3, subclass) => DeviceSubclass::DisplayController(*subclass).to_string(),
-            (4, _) => DeviceClass::MultimediaController.to_string(),
-            (5, _) => DeviceClass::MemoryController.to_string(),
-            (6, _) => DeviceClass::Bridge.to_string(),
-            (7, _) => DeviceClass::CommunicationController.to_string(),
-            (8, _) => DeviceClass::GenericSystemPeripheral.to_string(),
-            (9, _) => DeviceClass::InputDeviceController.to_string(),
-            (10, _) => DeviceClass::DockingStation.to_string(),
-            (11, _) => DeviceClass::Processor.to_string(),
-            (12, _) => DeviceClass::SerialBusController.to_string(),
-            (13, _) => DeviceClass::WirelessController.to_string(),
+            (1, subclass) => DeviceClass::MassStorageController(*subclass).to_string(),
+            (2, subclass) => DeviceClass::NetworkController(*subclass).to_string(),
+            (3, subclass) => DeviceClass::DisplayController(*subclass).to_string(),
+            (4, subclass) => DeviceClass::MultimediaController(*subclass).to_string(),
+            (5, subclass) => DeviceClass::MemoryController(*subclass).to_string(),
+            (6, subclass) => DeviceClass::Bridge(*subclass).to_string(),
+            (7, subclass) => DeviceClass::CommunicationController(*subclass).to_string(),
+            (8, subclass) => DeviceClass::GenericSystemPeripheral(*subclass).to_string(),
+            (9, subclass) => DeviceClass::InputDeviceController(*subclass).to_string(),
+            (10, subclass) => DeviceClass::DockingStation(*subclass).to_string(),
+            (11, subclass) => DeviceClass::Processor(*subclass).to_string(),
+            (12, subclass) => DeviceClass::SerialBusController(*subclass).to_string(),
+            (13, subclass) => DeviceClass::WirelessController(*subclass).to_string(),
             (14, _) => DeviceClass::IntelligentController.to_string(),
-            (15, _) => DeviceClass::SatelliteCommunicationsController.to_string(),
-            (16, _) => DeviceClass::EncryptionController.to_string(),
-            (17, _) => DeviceClass::SignalProcessingController.to_string(),
-            (18, _) => DeviceClass::ProcessingAccelerators.to_string(),
+            (15, subclass) => DeviceClass::SatelliteCommunicationsController(*subclass).to_string(),
+            (16, subclass) => DeviceClass::EncryptionController(*subclass).to_string(),
+            (17, subclass) => DeviceClass::SignalProcessingController(*subclass).to_string(),
+            (18, subclass) => DeviceClass::ProcessingAccelerator(*subclass).to_string(),
             (19, _) => DeviceClass::NonEssentialInstrumentation.to_string(),
-            (64, _) => DeviceClass::Unassigned.to_string(),
-            _ => DeviceClass::Unclassified.to_string(),
+            (255, _) => DeviceClass::Unassigned.to_string(),
+            (_, subclass) => DeviceClass::Unclassified(*subclass).to_string(),
         }
     }
 
@@ -324,52 +323,14 @@ impl Default for LinuxPCIDevice {
 
 impl std::fmt::Display for LinuxPCIDevice {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "Path: {:?}\nAddress: {}\nClass Name: {}\nClass ID: {}", self.path, self.address, self.class_name, format!("{:x?}", self.class_id))
-    }
-}
-
-impl Fetch for LinuxPCIDevice {
-    fn fetch() -> Vec<LinuxPCIDevice> {
-        let mut devices = Vec::new();
-        let dir_entries = list_dir_entries(PATH_TO_PCI_DEVICES);
-        for dir in dir_entries {
-            if let Some(d) = dir.to_str() {
-                let device = LinuxPCIDevice::new(d);
-                devices.push(device);
-            }
-        }
-        return devices;
-    }
-
-    fn fetch_by_class(class: DeviceClass) -> Vec<LinuxPCIDevice> {
-        let mut devices = Vec::new();
-        let dir_entries = list_dir_entries(PATH_TO_PCI_DEVICES);
-        for dir in dir_entries {
-            if let Some(d) = dir.to_str() {
-                let device = LinuxPCIDevice::new(d);
-                if device.class_name() == class.to_string() {
-                    devices.push(device);
-                }
-            }
-        }
-
-        return devices;
-    }
-
-    fn fetch_gpus() -> Vec<LinuxPCIDevice> {
-        let mut gpus = Self::fetch_by_class(DeviceClass::DisplayController);
-        for gpu in &mut gpus {
-            let whole_name = gpu.device_name();
-            if let Some(start_bytes) = whole_name.find("[") {
-                if let Some(end_bytes) = whole_name.rfind("]") {
-                    gpu.device_name = whole_name[start_bytes + 1..end_bytes].to_owned();
-                }
-            }
-            if gpu.vendor_name().contains("Corporation") {
-                gpu.vendor_name = gpu.vendor_name().replace(" Corporation", "");
-            }
-        }
-        gpus
+        write!(
+            f,
+            "Path: {:?}\nAddress: {}\nClass Name: {}\nClass ID: {}",
+            self.path,
+            self.address,
+            self.class_name,
+            format!("{:x?}", self.class_id)
+        )
     }
 }
 
@@ -463,23 +424,5 @@ mod tests {
     fn test_class_name() {
         let device = LinuxPCIDevice::new(PLACEHOLDER_PCI_DEVICE);
         assert_ne!(device.class_name(), "");
-    }
-
-    #[test]
-    fn test_fetch() {
-        let devices = LinuxPCIDevice::fetch();
-        assert_ne!(devices.len(), 0);
-    }
-
-    #[test]
-    fn test_fetch_gpus() {
-        let gpus = LinuxPCIDevice::fetch_gpus();
-        assert_ne!(gpus.len(), 0);
-    }
-
-    #[test]
-    fn test_fetch_by_class() {
-        let devices = LinuxPCIDevice::fetch_by_class(DeviceClass::MassStorageController);
-        assert_ne!(devices.len(), 0);
     }
 }
