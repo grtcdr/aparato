@@ -64,6 +64,9 @@ impl Properties for LinuxPCIDevice {
         self.set_subsystem_device_id();
         self.set_subsystem_vendor_id();
         self.set_class_name();
+        self.set_device_name();
+        self.set_vendor_name();
+        self.set_subsystem_name();
     }
 
     fn path(&self) -> PathBuf {
@@ -151,22 +154,28 @@ impl Properties for LinuxPCIDevice {
 
     fn set_vendor_id(&mut self) {
         if let Ok(str) = std::fs::read_to_string(&self.path.join("vendor")) {
-            let prefixless = str.trim_start_matches("0x").trim_end_matches("\n");
-            self.vendor_id = prefixless.as_bytes().to_vec();
+            let new_str = str.trim_start_matches("0x").trim_end_matches("\n");
+            if let Ok(decoded) = hex::decode(&new_str) {
+                self.vendor_id = decoded;
+            }
         }
     }
 
     fn set_device_id(&mut self) {
         if let Ok(str) = std::fs::read_to_string(&self.path.join("device")) {
-            let prefixless = str.trim_start_matches("0x").trim_end_matches("\n");
-            self.device_id = prefixless.as_bytes().to_vec();
+            let new_str = str.trim_start_matches("0x").trim_end_matches("\n");
+            if let Ok(decoded) = hex::decode(&new_str) {
+                self.device_id = decoded;
+            }
         }
     }
 
     fn set_revision(&mut self) {
         if let Ok(str) = std::fs::read_to_string(&self.path.join("revision")) {
-            let prefixless = str.trim_start_matches("0x").trim_end_matches("\n");
-            self.revision = prefixless.as_bytes().to_vec();
+            let new_str = str.trim_start_matches("0x").trim_end_matches("\n");
+            if let Ok(decoded) = hex::decode(&new_str) {
+                self.revision = decoded;
+            }
         }
     }
 
@@ -181,15 +190,19 @@ impl Properties for LinuxPCIDevice {
 
     fn set_subsystem_vendor_id(&mut self) {
         if let Ok(str) = std::fs::read_to_string(&self.path.join("subsystem_vendor")) {
-            let prefixless = str.trim_start_matches("0x").trim_end_matches("\n");
-            self.subsystem_vendor_id = prefixless.as_bytes().to_vec();
+            let new_str = str.trim_start_matches("0x").trim_end_matches("\n");
+            if let Ok(decoded) = hex::decode(&new_str) {
+                self.subsystem_vendor_id = decoded;
+            }
         }
     }
 
     fn set_subsystem_device_id(&mut self) {
         if let Ok(str) = std::fs::read_to_string(&self.path.join("subsystem_device")) {
-            let prefixless = str.trim_start_matches("0x").trim_end_matches("\n");
-            self.subsystem_device_id = prefixless.as_bytes().to_vec();
+            let new_str = str.trim_start_matches("0x").trim_end_matches("\n");
+            if let Ok(decoded) = hex::decode(&new_str) {
+                self.subsystem_device_id = decoded;
+            }
         }
     }
 
@@ -228,10 +241,9 @@ impl Properties for LinuxPCIDevice {
                         continue;
                     } else if !l.starts_with("\t") {
                         // vendor parsing
-                        let a = &self.vendor_id[..];
-                        let ven_in_hex = format!("{:x?}", a);
-                        if l.contains(&ven_in_hex) {
-                            self.vendor_name = l[4..].trim_start().to_owned();
+                        let ven = hex::encode(self.vendor_id.to_owned());
+                        if l.contains(&ven) {
+                            self.vendor_name = l.replace(&ven, "").trim().to_owned();
                         }
                     }
                 }
@@ -247,9 +259,9 @@ impl Properties for LinuxPCIDevice {
                         continue;
                     } else if l.starts_with("\t") {
                         // device parsing
-                        let dev_in_hex = format!("{:x?}", &self.device_id);
-                        if l.contains(&dev_in_hex) {
-                            self.device_name = l[5..].trim_start().to_owned();
+                        let dev = hex::encode(self.device_id.to_owned());
+                        if l.contains(&dev) {
+                            self.device_name = l.replace(&dev, "").trim().to_owned();
                         }
                     }
                 }
@@ -265,12 +277,12 @@ impl Properties for LinuxPCIDevice {
                         continue;
                     } else if l.starts_with("\t\t") {
                         // subsystem parsing
-                        let subvendor_in_hex = &format!("{:x?}", &self.subsystem_vendor_id);
-                        let subdevice_in_hex = &format!("{:x?}", &self.subsystem_device_id);
-                        if l.contains(subdevice_in_hex) && l.contains(subvendor_in_hex) {
+                        let sub_dev = hex::encode(self.subsystem_device_id.to_owned());
+                        let sub_ven = hex::encode(self.subsystem_vendor_id.to_owned());
+                        if l.contains(&sub_dev) && l.contains(&sub_ven) {
                             self.subsystem_name = l
-                                .replace(subvendor_in_hex, "")
-                                .replace(subdevice_in_hex, "")
+                                .replace(&sub_dev, "")
+                                .replace(&sub_ven, "")
                                 .trim()
                                 .to_owned();
                         }
@@ -325,11 +337,13 @@ impl std::fmt::Display for LinuxPCIDevice {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         write!(
             f,
-            "Path: {:?}\nAddress: {}\nClass Name: {}\nClass ID: {}",
+            "Path: {:?}\nAddress: {}\nClass Name: {}\nVendor: {}\nDevice: {}\nSubsystem: {}",
             self.path,
             self.address,
             self.class_name,
-            format!("{:x?}", self.class_id)
+            self.vendor_name,
+            self.device_name,
+            self.subsystem_name,
         )
     }
 }
