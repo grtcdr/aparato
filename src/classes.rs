@@ -1,7 +1,7 @@
 use std::fmt;
 
 pub enum DeviceClass {
-    Unclassified(u8),                          // ID: 00
+    Unclassified(u8),                      // ID: 00
     MassStorageController(u8),             // ID: 01
     NetworkController(u8),                 // ID: 02
     DisplayController(u8),                 // ID: 03

@@ -1,6 +1,7 @@
 use crate::classes::*;
 use crate::extra::*;
-use crate::traits::*;
+use crate::private::PrivateProperties;
+use crate::Properties;
 use std::path::PathBuf;
 
 /// This is where PCI devices are located.
@@ -47,11 +48,13 @@ impl Properties for LinuxPCIDevice {
             }
         }
 
-        Self::init(&mut device);
+        device.init();
 
         device
     }
+}
 
+impl PrivateProperties for LinuxPCIDevice {
     fn init(&mut self) {
         self.set_address();
         self.set_class_id();
@@ -228,6 +231,7 @@ impl Properties for LinuxPCIDevice {
             (17, subclass) => DeviceClass::SignalProcessingController(*subclass).to_string(),
             (18, subclass) => DeviceClass::ProcessingAccelerator(*subclass).to_string(),
             (19, _) => DeviceClass::NonEssentialInstrumentation.to_string(),
+            (46, _) => DeviceClass::Coprocessor.to_string(),
             (255, _) => DeviceClass::Unassigned.to_string(),
             (_, subclass) => DeviceClass::Unclassified(*subclass).to_string(),
         }
@@ -235,13 +239,14 @@ impl Properties for LinuxPCIDevice {
 
     fn set_vendor_name(&mut self) {
         if let Ok(lines) = read_lines(PATH_TO_PCI_IDS) {
+            let ven = hex::encode(self.vendor_id.to_owned());
+
             for line in lines {
                 if let Ok(l) = &line {
                     if l.len() == 0 && l.starts_with("#") && l.starts_with("C") {
                         continue;
                     } else if !l.starts_with("\t") {
                         // vendor parsing
-                        let ven = hex::encode(self.vendor_id.to_owned());
                         if l.contains(&ven) {
                             self.vendor_name = l.replace(&ven, "").trim().to_owned();
                         }
@@ -253,13 +258,14 @@ impl Properties for LinuxPCIDevice {
 
     fn set_device_name(&mut self) {
         if let Ok(lines) = read_lines(PATH_TO_PCI_IDS) {
+            let dev = hex::encode(self.device_id.to_owned());
+
             for line in lines {
                 if let Ok(l) = &line {
                     if l.len() == 0 && l.starts_with("#") && l.starts_with("C") {
                         continue;
                     } else if l.starts_with("\t") {
                         // device parsing
-                        let dev = hex::encode(self.device_id.to_owned());
                         if l.contains(&dev) {
                             self.device_name = l.replace(&dev, "").trim().to_owned();
                         }
@@ -271,14 +277,16 @@ impl Properties for LinuxPCIDevice {
 
     fn set_subsystem_name(&mut self) {
         if let Ok(lines) = read_lines(PATH_TO_PCI_IDS) {
+            let sub_dev = hex::encode(self.subsystem_device_id.to_owned());
+            let sub_ven = hex::encode(self.subsystem_vendor_id.to_owned());
+
             for line in lines {
                 if let Ok(l) = &line {
                     if l.len() == 0 && l.starts_with("#") && l.starts_with("C") {
                         continue;
                     } else if l.starts_with("\t\t") {
                         // subsystem parsing
-                        let sub_dev = hex::encode(self.subsystem_device_id.to_owned());
-                        let sub_ven = hex::encode(self.subsystem_vendor_id.to_owned());
+                        
                         if l.contains(&sub_dev) && l.contains(&sub_ven) {
                             self.subsystem_name = l
                                 .replace(&sub_dev, "")
