@@ -15,10 +15,13 @@ A <a href="https://pci-ids.ucw.cz/">pci.ids</a>-compliant library for getting in
 
 ### Disclaimer
 
-It isn't recommended to utilize the `main` branch, as the 
+- It isn't recommended to utilize the `main` branch, as the 
 project is still brand new and changes to the API are
 very likely, instead, you should use the crate provided in
 [crates.io](https://crates.io/crates/aparato).
+
+- aparato right now only works on Linux, different operating
+systems will be supported in the future.
 
 ### Usage
 
@@ -46,3 +49,8 @@ fn main() {
 }
 
 ```
+
+
+### Contributing
+
+Any form of contribution is welcomed, whether it be unit tests, refactoring, or bug-fixing. It's recommended you report issues before beginning to work on them.
