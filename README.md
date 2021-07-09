@@ -20,8 +20,8 @@ project is still brand new and changes to the API are
 very likely to happen. Instead, you should use the crate provided in
 [crates.io](https://crates.io/crates/aparato).
 
-- aparato right now only works on Linux, different operating
-systems will be supported in the future.
+- aparato right now only works on Linux, more platforms will receive
+support in the future.
 
 ### Usage
 
