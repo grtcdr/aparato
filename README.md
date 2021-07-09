@@ -25,37 +25,17 @@ aparato = "3.0.0" # Be sure to use the latest version
 
 ```rust
 use aparato::{Device, PCIDevice};
-use aparato::classes::DeviceClass;
 
 fn main() {
-    // Know the address domain of the PCI device?
+
+    // Know the domain of the PCI device?
     // Instantiate a new PCIDevice so we can get to know it a bit.
-    let device: PCIDevice = PCIDevice::new("0000:00:02.0");
+    let device = PCIDevice::new("00:02.0");
 
-    println!("Class Name: {}", device.class_name());    // e.g. Display Controller
-    println!("Vendor Name: {}", device.vendor_name());  // e.g. Intel Corporation
-    println!("Device Name: {}", device.device_name());  // e.g. WhiskeyLake-U GT2 [UHD Graphics 620]
-
-    // Alternatively, we can get information on PCI devices through fetching them in bulk!
-
-    // Get a list of available PCI devices and their information.
-    let foo: Vec<PCIDevice> = PCIDevice::fetch();
-    println!("{:?}", foo);
-
-    // Get a list of the available PCI devices of a specific class, network controllers in this case.
-    let bar: Vec<PCIDevice> = PCIDevice::fetch_by_class(DeviceClass::NetworkController);
-    println!("{:?}", thing);
+    println!("Class Name: {}", device.class_name());       // e.g. Display Controller
+    println!("Subclass Name: {}", device.subclass_name()); // e.g. VGA compatible controller
+    println!("Vendor Name: {}", device.vendor_name());     // e.g. Intel Corporation
+    println!("Device Name: {}", device.device_name());     // e.g. WhiskeyLake-U GT2 [UHD Graphics 620]
 }
 
 ```
-
----
-
-| Platform  | Support |
-| :-------: | :-----: |
-| Linux     |    ✓    |
-| Windows   |         |
-| macOS     |         |
-| NetBSD    |         |
-
-_aparato_ is still a work in progress.

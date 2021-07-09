@@ -254,7 +254,6 @@ impl Properties for LinuxPCIDevice {
                         continue;
                     } else if l.starts_with("C") && l.contains(&encoded_class) {
                         found_my_class = true;
-                        println!("{:?}", l);
                     } else if l.starts_with("\t") && l.contains(&encoded_subclass) && found_my_class {
                         self.subclass_name = l.replace(&encoded_subclass, "").trim().to_owned();
                         return;
