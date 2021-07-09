@@ -1,3 +1,4 @@
+#![doc(hidden)]
 use crate::classes::*;
 use crate::traits::*;
 use std::path::PathBuf;
