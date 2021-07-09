@@ -1,7 +1,8 @@
+#![doc(hidden)]
 use crate::classes::*;
 use crate::extra::*;
-use crate::private::PrivateProperties;
-use crate::Properties;
+use crate::private::Properties;
+use crate::Device;
 use std::path::PathBuf;
 
 /// This is where PCI devices are located.
@@ -28,7 +29,7 @@ pub struct LinuxPCIDevice {
     subsystem_name: String,
 }
 
-impl Properties for LinuxPCIDevice {
+impl Device for LinuxPCIDevice {
     fn new(path: &str) -> Self {
         let mut path_vec = [path].to_vec();
         let mut device: LinuxPCIDevice = Default::default();
@@ -52,25 +53,6 @@ impl Properties for LinuxPCIDevice {
 
         device
     }
-}
-
-impl PrivateProperties for LinuxPCIDevice {
-    fn init(&mut self) {
-        self.set_address();
-        self.set_class_id();
-        self.set_vendor_id();
-        self.set_device_id();
-        self.set_numa_node();
-        self.set_enabled();
-        self.set_d3cold_allowed();
-        self.set_revision();
-        self.set_subsystem_device_id();
-        self.set_subsystem_vendor_id();
-        self.set_class_name();
-        self.set_device_name();
-        self.set_vendor_name();
-        self.set_subsystem_name();
-    }
 
     fn path(&self) -> PathBuf {
         self.path.to_owned()
@@ -80,16 +62,16 @@ impl PrivateProperties for LinuxPCIDevice {
         self.address.to_owned()
     }
 
-    fn class_id(&self) -> Vec<u8> {
-        self.class_id.to_owned()
+    fn class_id(&self) -> String {
+        hex::encode(self.class_id.to_owned())
     }
 
-    fn vendor_id(&self) -> Vec<u8> {
-        self.vendor_id.to_owned()
+    fn vendor_id(&self) -> String {
+        hex::encode(self.vendor_id.to_owned())
     }
 
-    fn device_id(&self) -> Vec<u8> {
-        self.device_id.to_owned()
+    fn device_id(&self) -> String {
+        hex::encode(self.device_id.to_owned())
     }
 
     fn numa_node(&self) -> isize {
@@ -116,20 +98,39 @@ impl PrivateProperties for LinuxPCIDevice {
         self.d3cold_allowed
     }
 
-    fn revision(&self) -> Vec<u8> {
-        self.revision.to_owned()
+    fn revision(&self) -> String {
+        hex::encode(self.revision.to_owned())
     }
 
     fn subsystem_name(&self) -> String {
         self.subsystem_name.to_owned()
     }
 
-    fn subsystem_vendor_id(&self) -> Vec<u8> {
-        self.subsystem_vendor_id.to_owned()
+    fn subsystem_vendor_id(&self) -> String {
+        hex::encode(self.subsystem_vendor_id.to_owned())
     }
 
-    fn subsystem_device_id(&self) -> Vec<u8> {
-        self.subsystem_device_id.to_owned()
+    fn subsystem_device_id(&self) -> String {
+        hex::encode(self.subsystem_device_id.to_owned())
+    }
+}
+
+impl Properties for LinuxPCIDevice {
+    fn init(&mut self) {
+        self.set_address();
+        self.set_class_id();
+        self.set_vendor_id();
+        self.set_device_id();
+        self.set_numa_node();
+        self.set_enabled();
+        self.set_d3cold_allowed();
+        self.set_revision();
+        self.set_subsystem_device_id();
+        self.set_subsystem_vendor_id();
+        self.set_class_name();
+        self.set_device_name();
+        self.set_vendor_name();
+        self.set_subsystem_name();
     }
 
     fn set_path(&mut self, p: PathBuf) {
@@ -286,7 +287,7 @@ impl PrivateProperties for LinuxPCIDevice {
                         continue;
                     } else if l.starts_with("\t\t") {
                         // subsystem parsing
-                        
+
                         if l.contains(&sub_dev) && l.contains(&sub_ven) {
                             self.subsystem_name = l
                                 .replace(&sub_dev, "")

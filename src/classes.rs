@@ -176,13 +176,13 @@ impl fmt::Display for DeviceClass {
             DeviceClass::DockingStation(i) => match i {
                 0 => write!(f, "Generic Docking Station"),
                 _ => write!(f, "Docking Station"),
-            },  
+            },
             DeviceClass::Unclassified(i) => match i {
                 0 => write!(f, "Non-VGA Unclassified Device"),
                 1 => write!(f, "VGA-Compatible Unclassified Device"),
                 5 => write!(f, "Image Coprocessor"),
                 _ => write!(f, "Unclassified"),
-            },      
+            },
         }
     }
 }

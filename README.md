@@ -24,9 +24,8 @@ aparato = "3.0.0" # Be sure to use the latest version
 ### Examples
 
 ```rust
-use aparato::PCIDevice;
+use aparato::{Device, PCIDevice};
 use aparato::classes::DeviceClass;
-use aparato::traits::*;
 
 fn main() {
     // Know the address domain of the PCI device?
@@ -39,13 +38,12 @@ fn main() {
 
     // Alternatively, we can get information on PCI devices through fetching them in bulk!
 
-    // Return a list of available PCI devices and their information.
-    let detailed_list: Vec<PCIDevice> = PCIDevice::fetch();
-    println!("{:?}", detailed_list);
+    // Get a list of available PCI devices and their information.
+    let foo: Vec<PCIDevice> = PCIDevice::fetch();
+    println!("{:?}", foo);
 
-    // Return a list of the available PCI devices of a specific class.
-    // -> "thing" holds a list of all the detected network controllers and their information.
-    let thing: Vec<PCIDevice> = PCIDevice::fetch_by_class(DeviceClass::NetworkController);
+    // Get a list of the available PCI devices of a specific class, network controllers in this case.
+    let bar: Vec<PCIDevice> = PCIDevice::fetch_by_class(DeviceClass::NetworkController);
     println!("{:?}", thing);
 }
 
