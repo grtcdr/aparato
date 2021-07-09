@@ -248,7 +248,7 @@ impl Properties for LinuxPCIDevice {
             let subclass: [u8; 1] = [self.class_id[1]];
             let encoded_subclass = hex::encode(&subclass);
             let mut found_my_class = false;
-            
+
             for line in lines {
                 if let Ok(l) = &line {
                     if l.is_empty() || l.starts_with("#") {
@@ -323,8 +323,8 @@ impl Properties for LinuxPCIDevice {
 
     fn set_enabled(&mut self) {
         if let Ok(str) = std::fs::read_to_string(&self.path.join("enable")) {
-            match &str[..1] {
-                "0" => self.enabled = false,
+            match &str[..] {
+                "0\n" => self.enabled = false,
                 _ => self.enabled = true,
             }
         }
@@ -332,8 +332,8 @@ impl Properties for LinuxPCIDevice {
 
     fn set_d3cold_allowed(&mut self) {
         if let Ok(str) = std::fs::read_to_string(&self.path.join("d3cold_allowed")) {
-            match &str[..1] {
-                "0" => self.d3cold_allowed = false,
+            match &str[..] {
+                "0\n" => self.d3cold_allowed = false,
                 _ => self.d3cold_allowed = true,
             }
         }
