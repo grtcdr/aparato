@@ -13,6 +13,13 @@ A <a href="https://pci-ids.ucw.cz/">pci.ids</a>-compliant library for getting in
 
 </div>
 
+### Disclaimer
+
+It isn't recommended to utilize the `main` branch, as the 
+project is still brand new and changes to the API are
+very likely, instead, you should use the crate provided in
+[crates.io](https://crates.io/crates/aparato).
+
 ### Usage
 
 Add the following to your project's *Cargo.toml* file:
