@@ -248,13 +248,15 @@ impl Properties for LinuxPCIDevice {
             let subclass: [u8; 1] = [self.class_id[1]];
             let encoded_subclass = hex::encode(&subclass);
             let mut found_my_class = false;
+            
             for line in lines {
                 if let Ok(l) = &line {
                     if l.is_empty() || l.starts_with("#") {
                         continue;
                     } else if l.starts_with("C") && l.contains(&encoded_class) {
                         found_my_class = true;
-                    } else if l.starts_with("\t") && l.contains(&encoded_subclass) && found_my_class {
+                    } else if l.starts_with("\t") && l.contains(&encoded_subclass) && found_my_class
+                    {
                         self.subclass_name = l.replace(&encoded_subclass, "").trim().to_owned();
                         return;
                     }
@@ -271,12 +273,9 @@ impl Properties for LinuxPCIDevice {
                 if let Ok(l) = &line {
                     if l.len() == 0 || l.starts_with("#") || l.starts_with("C") {
                         continue;
-                    } else if !l.starts_with("\t") {
-                        // vendor parsing
-                        if l.contains(&ven) {
-                            self.vendor_name = l.replace(&ven, "").trim().to_owned();
-                            return;
-                        }
+                    } else if !l.starts_with("\t") && l.contains(&ven) {
+                        self.vendor_name = l.replace(&ven, "").trim().to_owned();
+                        return;
                     }
                 }
             }
@@ -286,17 +285,13 @@ impl Properties for LinuxPCIDevice {
     fn set_device_name(&mut self) {
         if let Ok(lines) = read_lines(PATH_TO_PCI_IDS) {
             let dev = hex::encode(self.device_id.to_owned());
-
             for line in lines {
                 if let Ok(l) = &line {
                     if l.len() == 0 || l.starts_with("#") || l.starts_with("C") {
                         continue;
-                    } else if l.starts_with("\t") {
-                        // device parsing
-                        if l.contains(&dev) {
-                            self.device_name = l.replace(&dev, "").trim().to_owned();
-                            return;
-                        }
+                    } else if l.starts_with("\t") && l.contains(&dev) {
+                        self.device_name = l.replace(&dev, "").trim().to_owned();
+                        return;
                     }
                 }
             }
@@ -312,17 +307,14 @@ impl Properties for LinuxPCIDevice {
                 if let Ok(l) = &line {
                     if l.len() == 0 && l.starts_with("#") && l.starts_with("C") {
                         continue;
-                    } else if l.starts_with("\t\t") {
-                        // subsystem parsing
-
-                        if l.contains(&sub_dev) && l.contains(&sub_ven) {
-                            self.subsystem_name = l
-                                .replace(&sub_dev, "")
-                                .replace(&sub_ven, "")
-                                .trim()
-                                .to_owned();
-                            return;
-                        }
+                    } else if l.starts_with("\t\t") && l.contains(&sub_dev) && l.contains(&sub_ven)
+                    {
+                        self.subsystem_name = l
+                            .replace(&sub_dev, "")
+                            .replace(&sub_ven, "")
+                            .trim()
+                            .to_owned();
+                        return;
                     }
                 }
             }
@@ -450,11 +442,5 @@ mod tests {
     fn test_class_name() {
         let device = LinuxPCIDevice::new(PLACEHOLDER_PCI_DEVICE);
         assert_ne!(device.class_name(), "");
-    }
-
-    #[test]
-    fn test_subclass_name() {
-        let device = LinuxPCIDevice::new(PLACEHOLDER_PCI_DEVICE);
-        assert_ne!(device.subclass_name(), "");
     }
 }
