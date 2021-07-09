@@ -47,16 +47,15 @@ pub trait Device {
     /// ## Examples
     ///
     /// ```
-    /// use aparato::PCIDevice;
-    /// use aparato::traits::*;
+    /// use aparato::{Device, PCIDevice};
     ///
     /// // PCIDevice::new() can autocomplete the path to the PCIDevice
     /// // if it isn't provided.
     ///
-    /// // The following statements all point to the same device.
-    /// let device_1 = PCIDevice::new("00:02.0");
-    /// let device_2 = PCIDevice::new("0000:00:02.0");
-    /// let device_3 = PCIDevice::new("/sys/bus/pci/devices/0000:00:02.0");
+    /// // foo, bar and baz all point to the same device.
+    /// let foo = PCIDevice::new("00:04.0");
+    /// let bar = PCIDevice::new("0000:00:04.0");
+    /// let baz = PCIDevice::new("/sys/bus/pci/devices/0000:00:04.0");
     /// ```
     fn new(path: &str) -> Self;
 

@@ -214,51 +214,57 @@ impl Properties for LinuxPCIDevice {
 
     fn set_class_name(&mut self) {
         // Associate class_id with class_name
-        self.class_name = match &self.class_id[0] {
-            1 => DeviceClass::MassStorageController.to_string(),
-            2 => DeviceClass::NetworkController.to_string(),
-            3 => DeviceClass::DisplayController.to_string(),
-            4 => DeviceClass::MultimediaController.to_string(),
-            5 => DeviceClass::MemoryController.to_string(),
-            6 => DeviceClass::Bridge.to_string(),
-            7 => DeviceClass::CommunicationController.to_string(),
-            8 => DeviceClass::GenericSystemPeripheral.to_string(),
-            9 => DeviceClass::InputDeviceController.to_string(),
-            10 => DeviceClass::DockingStation.to_string(),
-            11 => DeviceClass::Processor.to_string(),
-            12 => DeviceClass::SerialBusController.to_string(),
-            13 => DeviceClass::WirelessController.to_string(),
-            14 => DeviceClass::IntelligentController.to_string(),
-            15 => DeviceClass::SatelliteCommunicationsController.to_string(),
-            16 => DeviceClass::EncryptionController.to_string(),
-            17 => DeviceClass::SignalProcessingController.to_string(),
-            18 => DeviceClass::ProcessingAccelerator.to_string(),
-            19 => DeviceClass::NonEssentialInstrumentation.to_string(),
-            46 => DeviceClass::Coprocessor.to_string(),
-            255 => DeviceClass::Unassigned.to_string(),
-            _ => DeviceClass::Unclassified.to_string(),
+        if !&self.class_id.is_empty() {
+            self.class_name = match &self.class_id[0] {
+                1 => DeviceClass::MassStorageController.to_string(),
+                2 => DeviceClass::NetworkController.to_string(),
+                3 => DeviceClass::DisplayController.to_string(),
+                4 => DeviceClass::MultimediaController.to_string(),
+                5 => DeviceClass::MemoryController.to_string(),
+                6 => DeviceClass::Bridge.to_string(),
+                7 => DeviceClass::CommunicationController.to_string(),
+                8 => DeviceClass::GenericSystemPeripheral.to_string(),
+                9 => DeviceClass::InputDeviceController.to_string(),
+                10 => DeviceClass::DockingStation.to_string(),
+                11 => DeviceClass::Processor.to_string(),
+                12 => DeviceClass::SerialBusController.to_string(),
+                13 => DeviceClass::WirelessController.to_string(),
+                14 => DeviceClass::IntelligentController.to_string(),
+                15 => DeviceClass::SatelliteCommunicationsController.to_string(),
+                16 => DeviceClass::EncryptionController.to_string(),
+                17 => DeviceClass::SignalProcessingController.to_string(),
+                18 => DeviceClass::ProcessingAccelerator.to_string(),
+                19 => DeviceClass::NonEssentialInstrumentation.to_string(),
+                46 => DeviceClass::Coprocessor.to_string(),
+                255 => DeviceClass::Unassigned.to_string(),
+                _ => DeviceClass::Unclassified.to_string(),
+            }
         }
     }
 
     fn set_subclass_name(&mut self) {
         // Look for line containing C & containing &self.class_id[1]
         if let Ok(lines) = read_lines(PATH_TO_PCI_IDS) {
-            let class: [u8; 1] = [self.class_id[0]];
-            let encoded_class = hex::encode(&class);
-            let subclass: [u8; 1] = [self.class_id[1]];
-            let encoded_subclass = hex::encode(&subclass);
-            let mut found_my_class = false;
+            if !&self.class_id.is_empty() {
+                let class: [u8; 1] = [self.class_id[0]];
+                let encoded_class = hex::encode(&class);
+                let subclass: [u8; 1] = [self.class_id[1]];
+                let encoded_subclass = hex::encode(&subclass);
+                let mut found_my_class = false;
 
-            for line in lines {
-                if let Ok(l) = &line {
-                    if l.is_empty() || l.starts_with("#") {
-                        continue;
-                    } else if l.starts_with("C") && l.contains(&encoded_class) {
-                        found_my_class = true;
-                    } else if l.starts_with("\t") && l.contains(&encoded_subclass) && found_my_class
-                    {
-                        self.subclass_name = l.replace(&encoded_subclass, "").trim().to_owned();
-                        return;
+                for line in lines {
+                    if let Ok(l) = &line {
+                        if l.is_empty() || l.starts_with("#") {
+                            continue;
+                        } else if l.starts_with("C") && l.contains(&encoded_class) {
+                            found_my_class = true;
+                        } else if l.starts_with("\t")
+                            && l.contains(&encoded_subclass)
+                            && found_my_class
+                        {
+                            self.subclass_name = l.replace(&encoded_subclass, "").trim().to_owned();
+                            return;
+                        }
                     }
                 }
             }
