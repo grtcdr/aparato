@@ -16,6 +16,7 @@ pub struct LinuxPCIDevice {
     address: String,
     class_id: Vec<u8>,
     class_name: String,
+    subclass_name: String,
     vendor_id: Vec<u8>,
     vendor_name: String,
     device_id: Vec<u8>,
@@ -49,7 +50,21 @@ impl Device for LinuxPCIDevice {
             }
         }
 
-        device.init();
+        device.set_address();
+        device.set_class_id();
+        device.set_vendor_id();
+        device.set_device_id();
+        device.set_numa_node();
+        device.set_enabled();
+        device.set_d3cold_allowed();
+        device.set_revision();
+        device.set_subsystem_device_id();
+        device.set_subsystem_vendor_id();
+        device.set_class_name();
+        device.set_device_name();
+        device.set_vendor_name();
+        device.set_subsystem_name();
+        device.set_subclass_name();
 
         device
     }
@@ -80,6 +95,10 @@ impl Device for LinuxPCIDevice {
 
     fn class_name(&self) -> String {
         self.class_name.to_owned()
+    }
+
+    fn subclass_name(&self) -> String {
+        self.subclass_name.to_owned()
     }
 
     fn vendor_name(&self) -> String {
@@ -116,23 +135,6 @@ impl Device for LinuxPCIDevice {
 }
 
 impl Properties for LinuxPCIDevice {
-    fn init(&mut self) {
-        self.set_address();
-        self.set_class_id();
-        self.set_vendor_id();
-        self.set_device_id();
-        self.set_numa_node();
-        self.set_enabled();
-        self.set_d3cold_allowed();
-        self.set_revision();
-        self.set_subsystem_device_id();
-        self.set_subsystem_vendor_id();
-        self.set_class_name();
-        self.set_device_name();
-        self.set_vendor_name();
-        self.set_subsystem_name();
-    }
-
     fn set_path(&mut self, p: PathBuf) {
         self.path = p;
     }
@@ -212,29 +214,53 @@ impl Properties for LinuxPCIDevice {
 
     fn set_class_name(&mut self) {
         // Associate class_id with class_name
-        self.class_name = match (&self.class_id[0], &self.class_id[1]) {
-            (1, subclass) => DeviceClass::MassStorageController(*subclass).to_string(),
-            (2, subclass) => DeviceClass::NetworkController(*subclass).to_string(),
-            (3, subclass) => DeviceClass::DisplayController(*subclass).to_string(),
-            (4, subclass) => DeviceClass::MultimediaController(*subclass).to_string(),
-            (5, subclass) => DeviceClass::MemoryController(*subclass).to_string(),
-            (6, subclass) => DeviceClass::Bridge(*subclass).to_string(),
-            (7, subclass) => DeviceClass::CommunicationController(*subclass).to_string(),
-            (8, subclass) => DeviceClass::GenericSystemPeripheral(*subclass).to_string(),
-            (9, subclass) => DeviceClass::InputDeviceController(*subclass).to_string(),
-            (10, subclass) => DeviceClass::DockingStation(*subclass).to_string(),
-            (11, subclass) => DeviceClass::Processor(*subclass).to_string(),
-            (12, subclass) => DeviceClass::SerialBusController(*subclass).to_string(),
-            (13, subclass) => DeviceClass::WirelessController(*subclass).to_string(),
-            (14, _) => DeviceClass::IntelligentController.to_string(),
-            (15, subclass) => DeviceClass::SatelliteCommunicationsController(*subclass).to_string(),
-            (16, subclass) => DeviceClass::EncryptionController(*subclass).to_string(),
-            (17, subclass) => DeviceClass::SignalProcessingController(*subclass).to_string(),
-            (18, subclass) => DeviceClass::ProcessingAccelerator(*subclass).to_string(),
-            (19, _) => DeviceClass::NonEssentialInstrumentation.to_string(),
-            (46, _) => DeviceClass::Coprocessor.to_string(),
-            (255, _) => DeviceClass::Unassigned.to_string(),
-            (_, subclass) => DeviceClass::Unclassified(*subclass).to_string(),
+        self.class_name = match &self.class_id[0] {
+            1 => DeviceClass::MassStorageController.to_string(),
+            2 => DeviceClass::NetworkController.to_string(),
+            3 => DeviceClass::DisplayController.to_string(),
+            4 => DeviceClass::MultimediaController.to_string(),
+            5 => DeviceClass::MemoryController.to_string(),
+            6 => DeviceClass::Bridge.to_string(),
+            7 => DeviceClass::CommunicationController.to_string(),
+            8 => DeviceClass::GenericSystemPeripheral.to_string(),
+            9 => DeviceClass::InputDeviceController.to_string(),
+            10 => DeviceClass::DockingStation.to_string(),
+            11 => DeviceClass::Processor.to_string(),
+            12 => DeviceClass::SerialBusController.to_string(),
+            13 => DeviceClass::WirelessController.to_string(),
+            14 => DeviceClass::IntelligentController.to_string(),
+            15 => DeviceClass::SatelliteCommunicationsController.to_string(),
+            16 => DeviceClass::EncryptionController.to_string(),
+            17 => DeviceClass::SignalProcessingController.to_string(),
+            18 => DeviceClass::ProcessingAccelerator.to_string(),
+            19 => DeviceClass::NonEssentialInstrumentation.to_string(),
+            46 => DeviceClass::Coprocessor.to_string(),
+            255 => DeviceClass::Unassigned.to_string(),
+            _ => DeviceClass::Unclassified.to_string(),
+        }
+    }
+
+    fn set_subclass_name(&mut self) {
+        // Look for line containing C & containing &self.class_id[1]
+        if let Ok(lines) = read_lines(PATH_TO_PCI_IDS) {
+            let class: [u8; 1] = [self.class_id[0]];
+            let encoded_class = hex::encode(&class);
+            let subclass: [u8; 1] = [self.class_id[1]];
+            let encoded_subclass = hex::encode(&subclass);
+            let mut found_my_class = false;
+            for line in lines {
+                if let Ok(l) = &line {
+                    if l.is_empty() || l.starts_with("#") {
+                        continue;
+                    } else if l.starts_with("C") && l.contains(&encoded_class) {
+                        found_my_class = true;
+                        println!("{:?}", l);
+                    } else if l.starts_with("\t") && l.contains(&encoded_subclass) && found_my_class {
+                        self.subclass_name = l.replace(&encoded_subclass, "").trim().to_owned();
+                        return;
+                    }
+                }
+            }
         }
     }
 
@@ -244,12 +270,13 @@ impl Properties for LinuxPCIDevice {
 
             for line in lines {
                 if let Ok(l) = &line {
-                    if l.len() == 0 && l.starts_with("#") && l.starts_with("C") {
+                    if l.len() == 0 || l.starts_with("#") || l.starts_with("C") {
                         continue;
                     } else if !l.starts_with("\t") {
                         // vendor parsing
                         if l.contains(&ven) {
                             self.vendor_name = l.replace(&ven, "").trim().to_owned();
+                            return;
                         }
                     }
                 }
@@ -263,12 +290,13 @@ impl Properties for LinuxPCIDevice {
 
             for line in lines {
                 if let Ok(l) = &line {
-                    if l.len() == 0 && l.starts_with("#") && l.starts_with("C") {
+                    if l.len() == 0 || l.starts_with("#") || l.starts_with("C") {
                         continue;
                     } else if l.starts_with("\t") {
                         // device parsing
                         if l.contains(&dev) {
                             self.device_name = l.replace(&dev, "").trim().to_owned();
+                            return;
                         }
                     }
                 }
@@ -294,6 +322,7 @@ impl Properties for LinuxPCIDevice {
                                 .replace(&sub_ven, "")
                                 .trim()
                                 .to_owned();
+                            return;
                         }
                     }
                 }
@@ -327,6 +356,7 @@ impl Default for LinuxPCIDevice {
             address: String::new(),
             class_id: vec![],
             class_name: String::new(),
+            subclass_name: String::new(),
             vendor_id: vec![],
             vendor_name: String::new(),
             device_id: vec![],
@@ -378,19 +408,19 @@ mod tests {
     #[test]
     fn test_class_id() {
         let device = LinuxPCIDevice::new(PLACEHOLDER_PCI_DEVICE);
-        assert_ne!(device.device_id(), 0);
+        assert_ne!(device.device_id(), "");
     }
 
     #[test]
     fn test_vendor_id() {
         let device = LinuxPCIDevice::new(PLACEHOLDER_PCI_DEVICE);
-        assert_ne!(device.vendor_id(), 0);
+        assert_ne!(device.vendor_id(), "");
     }
 
     #[test]
     fn test_device_id() {
         let device = LinuxPCIDevice::new(PLACEHOLDER_PCI_DEVICE);
-        assert_ne!(device.device_id(), 0);
+        assert_ne!(device.device_id(), "");
     }
 
     #[test]
@@ -402,50 +432,30 @@ mod tests {
     #[test]
     fn test_revision() {
         let device = LinuxPCIDevice::new(PLACEHOLDER_PCI_DEVICE);
-        assert_ne!(device.revision(), 0);
+        assert_ne!(device.revision(), "");
     }
 
     #[test]
     fn test_subsystem_vendor_id() {
         let device = LinuxPCIDevice::new(PLACEHOLDER_PCI_DEVICE);
-        assert_ne!(device.subsystem_vendor_id(), 0);
+        assert_ne!(device.subsystem_vendor_id(), "");
     }
 
     #[test]
     fn test_subsystem_device_id() {
         let device = LinuxPCIDevice::new(PLACEHOLDER_PCI_DEVICE);
-        assert_ne!(device.subsystem_device_id(), 0);
-    }
-
-    #[test]
-    fn test_enabled() {
-        // We can't know for sure which devices are/aren't enabled, but we
-        // can perform a test to make sure that at least one device is.
-        let devices = LinuxPCIDevice::fetch();
-        for device in devices {
-            if device.enabled {
-                assert_eq!((), ());
-                break;
-            }
-        }
-    }
-
-    #[test]
-    fn test_d3cold_allowed() {
-        // We can't know for sure which devices have/don't have d3cold capabilities,
-        // but we can perform a test to make sure that at least one device does.
-        let devices = LinuxPCIDevice::fetch();
-        for device in devices {
-            if device.d3cold_allowed {
-                assert_eq!((), ());
-                break;
-            }
-        }
+        assert_ne!(device.subsystem_device_id(), "");
     }
 
     #[test]
     fn test_class_name() {
         let device = LinuxPCIDevice::new(PLACEHOLDER_PCI_DEVICE);
         assert_ne!(device.class_name(), "");
+    }
+
+    #[test]
+    fn test_subclass_name() {
+        let device = LinuxPCIDevice::new(PLACEHOLDER_PCI_DEVICE);
+        assert_ne!(device.subclass_name(), "");
     }
 }

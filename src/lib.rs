@@ -83,6 +83,9 @@ pub trait Device {
     /// This function returns the `PCIDevice` class name.
     fn class_name(&self) -> String;
 
+    /// This function returns the `PCIDevice` subclass name.
+    fn subclass_name(&self) -> String;
+
     /// This function returns the `PCIDevice` vendor name.
     fn vendor_name(&self) -> String;
 
@@ -110,20 +113,7 @@ pub trait Device {
 
 pub(crate) mod private {
     pub(crate) trait Properties {
-        /// `PCIDevice::new()` calls this function to initialize the device's fields
-        /// by calling several *setters*.
-        ///
-        /// The following are fields that `init()` sets for the caller:
-        /// - `address`
-        /// - `class_id`
-        /// - `vendor_id`
-        /// - `device_id`
-        /// - `class_name`
-        /// - `numa_node`
-        #[doc(hidden)]
-        fn init(&mut self);
-
-        // Setters...
+        // This trait contains exclusively the setters.
 
         /// Set the `path` field of the `PCIDevice`.
         fn set_path(&mut self, p: std::path::PathBuf);
@@ -145,6 +135,9 @@ pub(crate) mod private {
 
         /// This function sets the `class_name` field of the `PCIDevice`.
         fn set_class_name(&mut self);
+
+        /// This function sets the `subclass_name` field of the `PCIDevice`.
+        fn set_subclass_name(&mut self);
 
         /// This function sets the `revision` field of the `PCIDevice`.
         fn set_revision(&mut self);
@@ -172,17 +165,18 @@ pub(crate) mod private {
     }
 }
 
-/// A trait that defines a set of methods which can fetch the information of multiple PCI devices all at once.
+/// A trait that provides a set of methods which can fetch the information of multiple PCI devices all at once.
 ///
 /// `Fetch` can take care of initializing PCI devices and fetching their information for you.
+/// It does this by traversing the filesystem, and getting the appropriate data of each device it finds.
 pub trait Fetch {
-    /// This function returns a list of available PCI devices and their information.
+    /// This function returns a **list** of available PCI devices and their information.
     fn fetch() -> Vec<PCIDevice>;
 
-    /// This function returns a list of available PCI devices of a specific class and their information.
+    /// This function returns a **list** of available PCI devices of a specific class and their information.
     fn fetch_by_class(class: crate::classes::DeviceClass) -> Vec<PCIDevice>;
 
-    /// This function returns a list of available GPUs and their information.
+    /// This function returns a **list** of available GPUs and their information.
     ///
     /// This essentially wraps `fetch_by_class(DeviceClass::DisplayController)`
     /// but masks unnecessary data from device and vendor names, for example: \
