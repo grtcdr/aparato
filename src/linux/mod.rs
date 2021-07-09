@@ -345,36 +345,21 @@ impl Default for LinuxPCIDevice {
         LinuxPCIDevice {
             path: PathBuf::new(),
             address: String::new(),
-            class_id: vec![],
             class_name: String::new(),
             subclass_name: String::new(),
-            vendor_id: vec![],
             vendor_name: String::new(),
-            device_id: vec![],
             device_name: String::new(),
+            subsystem_name: String::new(),
+            class_id: vec![],
+            subsystem_vendor_id: vec![],
+            subsystem_device_id: vec![],
+            device_id: vec![],
+            revision: vec![],
+            vendor_id: vec![],
             numa_node: -1,
             d3cold_allowed: false,
             enabled: false,
-            revision: vec![],
-            subsystem_vendor_id: vec![],
-            subsystem_device_id: vec![],
-            subsystem_name: String::new(),
         }
-    }
-}
-
-impl std::fmt::Display for LinuxPCIDevice {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(
-            f,
-            "Path: {:?}\nAddress: {}\nClass Name: {}\nVendor: {}\nDevice: {}\nSubsystem: {}",
-            self.path,
-            self.address,
-            self.class_name,
-            self.vendor_name,
-            self.device_name,
-            self.subsystem_name,
-        )
     }
 }
 
