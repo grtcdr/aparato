@@ -1,119 +1,200 @@
 #![doc(hidden)]
 use crate::classes::*;
-use crate::traits::*;
+use crate::extra::*;
+use crate::private::Properties;
+use crate::Device;
 use std::path::PathBuf;
 
 #[derive(Debug)]
 pub struct NetBSDPCIDevice {
     path: PathBuf,
     address: String,
-    class_id: String,
+    class_id: Vec<u8>,
     class_name: String,
-    vendor_id: String,
+    subclass_name: String,
+    vendor_id: Vec<u8>,
     vendor_name: String,
-    device_id: String,
+    device_id: Vec<u8>,
     device_name: String,
+    revision: Vec<u8>,
     numa_node: isize,
+    enabled: bool,
+    d3cold_allowed: bool,
+    subsystem_vendor_id: Vec<u8>,
+    subsystem_device_id: Vec<u8>,
+    subsystem_name: String,
 }
 
-impl Properties for NetBSDPCIDevice {
+impl Device for NetBSDPCIDevice {
     fn new(path: &str) -> Self {
         todo!()
     }
 
-    fn init(&mut self) {
+    fn path(&self) -> PathBuf {
         todo!()
     }
 
-    fn path(&self) -> PathBuf {
-        self.path.to_owned()
-    }
-
     fn address(&self) -> String {
-        self.address.to_owned()
+        todo!()
     }
 
     fn class_id(&self) -> String {
-        self.class_id.to_owned()
+        todo!()
     }
 
     fn vendor_id(&self) -> String {
-        self.vendor_id.to_owned()
+        todo!()
     }
 
     fn device_id(&self) -> String {
-        self.device_id.to_owned()
+        todo!()
     }
 
     fn numa_node(&self) -> isize {
-        self.numa_node.to_owned()
+        todo!()
     }
 
     fn class_name(&self) -> String {
-        self.class_name.to_owned()
+        todo!()
+    }
+
+    fn subclass_name(&self) -> String {
+        todo!()
     }
 
     fn vendor_name(&self) -> String {
-        self.vendor_name.to_owned()
+        todo!()
     }
 
     fn device_name(&self) -> String {
-        self.device_name.to_owned()
+        todo!()
     }
 
+    fn enabled(&self) -> bool {
+        todo!()
+    }
+
+    fn d3cold_allowed(&self) -> bool {
+        todo!()
+    }
+
+    fn revision(&self) -> String {
+        todo!()
+    }
+
+    fn subsystem_name(&self) -> String {
+        todo!()
+    }
+
+    fn subsystem_vendor_id(&self) -> String {
+        todo!()
+    }
+
+    fn subsystem_device_id(&self) -> String {
+        todo!()
+    }
+}
+
+impl Properties for NetBSDPCIDevice {
     fn set_path(&mut self, p: PathBuf) {
-        self.path = p;
+        todo!()
     }
 
     fn set_address(&mut self) {
         todo!()
+
     }
 
     fn set_class_id(&mut self) {
         todo!()
+
     }
 
     fn set_vendor_id(&mut self) {
         todo!()
+
     }
 
     fn set_device_id(&mut self) {
         todo!()
+
+    }
+
+    fn set_revision(&mut self) {
+        todo!()
+
     }
 
     fn set_numa_node(&mut self) {
         todo!()
+
+    }
+
+    fn set_subsystem_vendor_id(&mut self) {
+        todo!()
+
+    }
+
+    fn set_subsystem_device_id(&mut self) {
+        todo!()
+
     }
 
     fn set_class_name(&mut self) {
         todo!()
+
     }
 
-    fn set_vendor_name(&mut self, name: String) {
-        self.vendor_name = name;
+    fn set_subclass_name(&mut self) {
+        todo!()
+
     }
 
-    fn set_device_name(&mut self, name: String) {
-        self.device_name = name;
+    fn set_vendor_name(&mut self) {
+        todo!()
+
+    }
+
+    fn set_device_name(&mut self) {
+        todo!()
+
+    }
+
+    fn set_subsystem_name(&mut self) {
+        todo!()
+
+    }
+
+    fn set_enabled(&mut self) {
+        todo!()
+
+    }
+
+    fn set_d3cold_allowed(&mut self) {
+        todo!()
+
     }
 }
 
-impl std::fmt::Display for NetBSDPCIDevice {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "{}", self.address)
-    }
-}
-
-impl Fetch for NetBSDPCIDevice {
-    fn fetch() -> Vec<NetBSDPCIDevice> {
-        todo!()
-    }
-
-    fn fetch_by_class(class: DeviceClass) -> Vec<NetBSDPCIDevice> {
-        todo!()
-    }
-
-    fn fetch_gpus() -> Vec<NetBSDPCIDevice> {
-        todo!()
+impl Default for NetBSDPCIDevice {
+    fn default() -> Self {
+        NetBSDPCIDevice {
+            path: PathBuf::new(),
+            address: String::new(),
+            class_name: String::new(),
+            subclass_name: String::new(),
+            vendor_name: String::new(),
+            device_name: String::new(),
+            subsystem_name: String::new(),
+            class_id: vec![],
+            subsystem_vendor_id: vec![],
+            subsystem_device_id: vec![],
+            device_id: vec![],
+            revision: vec![],
+            vendor_id: vec![],
+            numa_node: -1,
+            d3cold_allowed: false,
+            enabled: false,
+        }
     }
 }
