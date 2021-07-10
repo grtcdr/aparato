@@ -1,8 +1,10 @@
 #![doc(hidden)]
+#![allow(unused_variables)]
 use crate::classes::*;
 use crate::extra::*;
 use crate::private::Properties;
 use crate::Device;
+use crate::Fetch;
 use std::path::PathBuf;
 
 /// This is where PCI devices are located.
@@ -32,22 +34,24 @@ pub struct LinuxPCIDevice {
 
 impl Device for LinuxPCIDevice {
     fn new(path: &str) -> Self {
-        let mut path_vec = [path].to_vec();
         let mut device: LinuxPCIDevice = Default::default();
+        let mut path_vec = [path].to_vec();
 
         // One of the following two conditions will try to autocomplete the path of the
         // PCI device if the one provided doesn't point to a real path in the filesystem.
-        //   e.g.  0000:00:00.0 ->  /sys/bus/pci/devices/0000:00:00.0
-        //         00:00.0      ->  /sys/bus/pci/devices/0000:00:00.0
         if !PathBuf::from(path_vec.concat()).is_dir() {
+            // e.g. 0000:00:00.0 ->  /sys/bus/pci/devices/0000:00:00.0
             path_vec.insert(0, PATH_TO_PCI_DEVICES);
-            device.path = PathBuf::from(path_vec.concat());
+            device.set_path(PathBuf::from(path_vec.concat()));
             if !PathBuf::from(path_vec.concat()).is_dir() {
+                // e.g. 00:00.0      ->  /sys/bus/pci/devices/0000:00:00.0
                 let mut id = path.to_owned();
                 id.insert_str(0, "0000:");
                 std::mem::swap(&mut path_vec[1], &mut id.as_str());
-                device.path = PathBuf::from(path_vec.concat());
+                device.set_path(PathBuf::from(path_vec.concat()));
             }
+        } else {
+            device.set_path(PathBuf::from(path_vec.concat()));
         }
 
         device.set_address();
@@ -213,58 +217,59 @@ impl Properties for LinuxPCIDevice {
     }
 
     fn set_class_name(&mut self) {
+        if self.class_id.is_empty() {
+            return;
+        }
+
         // Associate class_id with class_name
-        if !&self.class_id.is_empty() {
-            self.class_name = match &self.class_id[0] {
-                1 => DeviceClass::MassStorageController.to_string(),
-                2 => DeviceClass::NetworkController.to_string(),
-                3 => DeviceClass::DisplayController.to_string(),
-                4 => DeviceClass::MultimediaController.to_string(),
-                5 => DeviceClass::MemoryController.to_string(),
-                6 => DeviceClass::Bridge.to_string(),
-                7 => DeviceClass::CommunicationController.to_string(),
-                8 => DeviceClass::GenericSystemPeripheral.to_string(),
-                9 => DeviceClass::InputDeviceController.to_string(),
-                10 => DeviceClass::DockingStation.to_string(),
-                11 => DeviceClass::Processor.to_string(),
-                12 => DeviceClass::SerialBusController.to_string(),
-                13 => DeviceClass::WirelessController.to_string(),
-                14 => DeviceClass::IntelligentController.to_string(),
-                15 => DeviceClass::SatelliteCommunicationsController.to_string(),
-                16 => DeviceClass::EncryptionController.to_string(),
-                17 => DeviceClass::SignalProcessingController.to_string(),
-                18 => DeviceClass::ProcessingAccelerator.to_string(),
-                19 => DeviceClass::NonEssentialInstrumentation.to_string(),
-                46 => DeviceClass::Coprocessor.to_string(),
-                255 => DeviceClass::Unassigned.to_string(),
-                _ => DeviceClass::Unclassified.to_string(),
-            }
+        self.class_name = match &self.class_id[0] {
+            1 => DeviceClass::MassStorageController.to_string(),
+            2 => DeviceClass::NetworkController.to_string(),
+            3 => DeviceClass::DisplayController.to_string(),
+            4 => DeviceClass::MultimediaController.to_string(),
+            5 => DeviceClass::MemoryController.to_string(),
+            6 => DeviceClass::Bridge.to_string(),
+            7 => DeviceClass::CommunicationController.to_string(),
+            8 => DeviceClass::GenericSystemPeripheral.to_string(),
+            9 => DeviceClass::InputDeviceController.to_string(),
+            10 => DeviceClass::DockingStation.to_string(),
+            11 => DeviceClass::Processor.to_string(),
+            12 => DeviceClass::SerialBusController.to_string(),
+            13 => DeviceClass::WirelessController.to_string(),
+            14 => DeviceClass::IntelligentController.to_string(),
+            15 => DeviceClass::SatelliteCommunicationsController.to_string(),
+            16 => DeviceClass::EncryptionController.to_string(),
+            17 => DeviceClass::SignalProcessingController.to_string(),
+            18 => DeviceClass::ProcessingAccelerator.to_string(),
+            19 => DeviceClass::NonEssentialInstrumentation.to_string(),
+            46 => DeviceClass::Coprocessor.to_string(),
+            255 => DeviceClass::Unassigned.to_string(),
+            _ => DeviceClass::Unclassified.to_string(),
         }
     }
 
     fn set_subclass_name(&mut self) {
-        // Look for line containing C & containing &self.class_id[1]
-        if let Ok(lines) = read_lines(PATH_TO_PCI_IDS) {
-            if !&self.class_id.is_empty() {
-                let class: [u8; 1] = [self.class_id[0]];
-                let encoded_class = hex::encode(&class);
-                let subclass: [u8; 1] = [self.class_id[1]];
-                let encoded_subclass = hex::encode(&subclass);
-                let mut found_my_class = false;
+        if self.class_id.is_empty() {
+            return;
+        }
 
-                for line in lines {
-                    if let Ok(l) = &line {
-                        if l.is_empty() || l.starts_with("#") {
-                            continue;
-                        } else if l.starts_with("C") && l.contains(&encoded_class) {
-                            found_my_class = true;
-                        } else if l.starts_with("\t")
-                            && l.contains(&encoded_subclass)
-                            && found_my_class
-                        {
-                            self.subclass_name = l.replace(&encoded_subclass, "").trim().to_owned();
-                            return;
-                        }
+        if let Ok(lines) = read_lines(PATH_TO_PCI_IDS) {
+            let class: [u8; 1] = [self.class_id[0]];
+            let encoded_class = hex::encode(&class);
+            let subclass: [u8; 1] = [self.class_id[1]];
+            let encoded_subclass = hex::encode(&subclass);
+            let mut found_my_class = false;
+
+            for line in lines {
+                if let Ok(l) = &line {
+                    if l.is_empty() || l.starts_with("#") {
+                        continue;
+                    } else if l.starts_with("C") && l.contains(&encoded_class) {
+                        found_my_class = true;
+                    } else if l.starts_with("\t") && l.contains(&encoded_subclass) && found_my_class
+                    {
+                        self.subclass_name = l.replace(&encoded_subclass, "").trim().to_owned();
+                        return;
                     }
                 }
             }
@@ -272,6 +277,10 @@ impl Properties for LinuxPCIDevice {
     }
 
     fn set_vendor_name(&mut self) {
+        if self.vendor_id.is_empty() {
+            return;
+        }
+
         if let Ok(lines) = read_lines(PATH_TO_PCI_IDS) {
             let ven = hex::encode(self.vendor_id.to_owned());
 
@@ -289,6 +298,10 @@ impl Properties for LinuxPCIDevice {
     }
 
     fn set_device_name(&mut self) {
+        if self.device_id.is_empty() {
+            return;
+        }
+
         if let Ok(lines) = read_lines(PATH_TO_PCI_IDS) {
             let dev = hex::encode(self.device_id.to_owned());
             for line in lines {
@@ -305,6 +318,10 @@ impl Properties for LinuxPCIDevice {
     }
 
     fn set_subsystem_name(&mut self) {
+        if self.subsystem_device_id.is_empty() {
+            return;
+        }
+
         if let Ok(lines) = read_lines(PATH_TO_PCI_IDS) {
             let sub_dev = hex::encode(self.subsystem_device_id.to_owned());
             let sub_ven = hex::encode(self.subsystem_vendor_id.to_owned());
@@ -366,6 +383,36 @@ impl Default for LinuxPCIDevice {
             d3cold_allowed: false,
             enabled: false,
         }
+    }
+}
+
+impl Fetch for LinuxPCIDevice {
+    fn fetch(maximum_devices: Option<u8>) -> Vec<LinuxPCIDevice> {
+        let mut devices = Vec::new();
+        let entries = list_dir_entries(PATH_TO_PCI_DEVICES);
+        let mut i = 0u8;
+        for dir in entries {
+            if let Some(d) = dir.to_str() {
+                if let Some(m) = maximum_devices {
+                    i = i + 1;
+                    if i > m {
+                        break;
+                    }
+                }
+
+                let device = LinuxPCIDevice::new(d);
+                devices.push(device);
+            }
+        }
+        return devices;
+    }
+
+    fn fetch_by_class(class: crate::classes::DeviceClass) -> Vec<LinuxPCIDevice> {
+        todo!()
+    }
+
+    fn fetch_gpus() -> Vec<LinuxPCIDevice> {
+        todo!()
     }
 }
 

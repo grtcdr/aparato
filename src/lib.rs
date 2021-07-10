@@ -2,7 +2,7 @@
 //!
 //! aparato is a library that can provide you with information about one or all your connected PCI devices.
 //!
-//! ### Example:
+//! ## Example:
 //!
 //! A quick example to get started is to run the following chunk of code:
 //!
@@ -170,7 +170,19 @@ pub(crate) mod private {
 /// It does this by traversing the filesystem, and getting the appropriate data of each device it finds.
 pub trait Fetch {
     /// This function returns a **list** of available PCI devices and their information.
-    fn fetch() -> Vec<PCIDevice>;
+    ///
+    /// If anything other than `None` or `Some(0)` is provided to the function,
+    /// it will limit itself to fetch only the given amount.
+    /// ## Examples:
+    /// ```
+    /// let devices = PCIDevice::fetch(Some(2));
+    ///
+    /// // Print to the screen the class name of the fetched PCI devices.
+    /// for device in devices {
+    ///     println!("{}", device.class_name());    
+    /// }
+    /// ```
+    fn fetch(maximum_devices: Option<u8>) -> Vec<PCIDevice>;
 
     /// This function returns a **list** of available PCI devices of a specific class and their information.
     fn fetch_by_class(class: crate::classes::DeviceClass) -> Vec<PCIDevice>;
