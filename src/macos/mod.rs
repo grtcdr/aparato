@@ -102,77 +102,62 @@ impl Properties for MacOSPCIDevice {
 
     fn set_address(&mut self) {
         todo!()
-
     }
 
     fn set_class_id(&mut self) {
         todo!()
-
     }
 
     fn set_vendor_id(&mut self) {
         todo!()
-
     }
 
     fn set_device_id(&mut self) {
         todo!()
-
     }
 
     fn set_revision(&mut self) {
         todo!()
-
     }
 
     fn set_numa_node(&mut self) {
         todo!()
-
     }
 
     fn set_subsystem_vendor_id(&mut self) {
         todo!()
-
     }
 
     fn set_subsystem_device_id(&mut self) {
         todo!()
-
     }
 
     fn set_class_name(&mut self) {
         todo!()
-
     }
 
     fn set_subclass_name(&mut self) {
         todo!()
-
     }
 
     fn set_vendor_name(&mut self) {
         todo!()
-
     }
 
     fn set_device_name(&mut self) {
         todo!()
-
     }
 
     fn set_subsystem_name(&mut self) {
         todo!()
-
     }
 
     fn set_enabled(&mut self) {
         todo!()
-
     }
 
     fn set_d3cold_allowed(&mut self) {
         todo!()
-
     }
 }
 
