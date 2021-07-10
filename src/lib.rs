@@ -175,6 +175,8 @@ pub trait Fetch {
     /// it will limit itself to fetch only the given amount.
     /// ## Examples:
     /// ```
+    /// use aparato::{PCIDevice, Fetch}; 
+    ///
     /// let devices = PCIDevice::fetch(Some(2));
     ///
     /// // Print to the screen the class name of the fetched PCI devices.
