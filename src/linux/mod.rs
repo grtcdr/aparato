@@ -139,6 +139,36 @@ impl Device for LinuxPCIDevice {
 }
 
 impl Properties for LinuxPCIDevice {
+    fn reserved_new(path: &str) -> Self {
+        let mut device: LinuxPCIDevice = Default::default();
+        let mut path_vec = [path].to_vec();
+
+        // One of the following two conditions will try to autocomplete the path of the
+        // PCI device if the one provided doesn't point to a real path in the filesystem.
+        if !PathBuf::from(path_vec.concat()).is_dir() {
+            // e.g. 0000:00:00.0 ->  /sys/bus/pci/devices/0000:00:00.0
+            path_vec.insert(0, PATH_TO_PCI_DEVICES);
+            device.set_path(PathBuf::from(path_vec.concat()));
+            if !PathBuf::from(path_vec.concat()).is_dir() {
+                // e.g. 00:00.0  ->  /sys/bus/pci/devices/0000:00:00.0
+                let mut id = path.to_owned();
+                id.insert_str(0, "0000:");
+                std::mem::swap(&mut path_vec[1], &mut id.as_str());
+                device.set_path(PathBuf::from(path_vec.concat()));
+            }
+        } else {
+            device.set_path(PathBuf::from(path_vec.concat()));
+        }
+
+        // reserved_new tries to fetch the least amount of data at first.
+        // All the other fields can be populated later on.
+        device.set_address();
+        device.set_class_id();
+        device.set_class_name();
+
+        device
+    }
+    
     fn set_path(&mut self, p: PathBuf) {
         self.path = p;
     }

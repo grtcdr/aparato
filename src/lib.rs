@@ -114,6 +114,9 @@ pub(crate) mod private {
     pub(crate) trait Properties {
         // This trait contains exclusively the setters.
 
+        /// This function is reserved for use by `Fetcher`
+        fn reserved_new(path: &str) -> Self;
+
         /// Set the `path` field of the `PCIDevice`.
         fn set_path(&mut self, p: std::path::PathBuf);
 
@@ -175,7 +178,7 @@ pub trait Fetch {
     /// it will limit itself to fetch only the given amount.
     /// ## Examples:
     /// ```
-    /// use aparato::{PCIDevice, Fetch}; 
+    /// use aparato::{PCIDevice, Fetch, Device}; 
     ///
     /// let devices = PCIDevice::fetch(Some(2));
     ///
