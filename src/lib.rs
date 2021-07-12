@@ -2,7 +2,7 @@
 //!
 //! aparato is a library that can provide you with information about one or all your connected PCI devices.
 //!
-//! ## Example:
+//! # Examples
 //!
 //! A quick example to get started is to run the following chunk of code:
 //!
@@ -45,7 +45,7 @@ cfg_if::cfg_if! {
 pub trait Device {
     /// This function returns a new instance of `PCIDevice` struct using the given `path`.
     ///
-    /// ## Example:
+    /// # Examples
     ///
     /// ```
     /// use aparato::{Device, PCIDevice};
@@ -174,7 +174,8 @@ pub trait Fetch {
     ///
     /// If anything other than `None` or `Some(0)` is provided to the function,
     /// it will limit itself to fetch only the given amount.
-    /// ## Example:
+    ///
+    /// # Examples
     /// ```
     /// use aparato::{PCIDevice, Fetch, Device};
     ///
@@ -188,6 +189,24 @@ pub trait Fetch {
     fn fetch(maximum_devices: Option<u8>) -> Vec<PCIDevice>;
 
     /// This function returns a **list** of available PCI devices of a specific class and their information.
+    ///
+    /// # Examples
+    /// ```
+    /// use aparato::{Fetch, PCIDevice, DeviceClass};
+    ///
+    /// fn main() {
+    ///     // foo is a list of a maximum of 3 serial bus controllers.
+    ///     let foo = PCIDevice::fetch_by_class(DeviceClass::SerialBusController, Some(3));
+    ///
+    ///     // bar is a list of bridges with no maximum size.
+    ///     // we'll get as many bridges as aparato can find.
+    ///     let bar = PCIDevice::fetch_by_class(DeviceClass::Bridge, Some(0));
+    ///
+    ///     // baz is a list of wireless controllers with no maximum size.
+    ///     let baz = PCIDevice::fetch_by_class(DeviceClass::WirelessController, None);
+    ///
+    /// }
+    /// ```
     fn fetch_by_class(
         class: crate::device_class::DeviceClass,
         maximum_devices: Option<u8>,
@@ -198,7 +217,7 @@ pub trait Fetch {
     /// - `TU117M [GeForce GTX 1650 Mobile / Max-Q]` becomes `GeForce GTX 1650 Mobile / Max-Q`
     /// - `NVIDIA Corporation` becomes `NVIDIA`
     ///
-    /// ## Example:
+    /// # Examples
     /// ```
     /// use aparato::{Fetch, PCIDevice};
     ///

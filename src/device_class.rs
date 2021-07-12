@@ -1,5 +1,8 @@
+//! This module contains a crucial enum, [DeviceClass], that you can use when working with [Fetch](crate::Fetch).
+
 use std::fmt;
 
+/// This enum holds variants that are defined as classes in <https://pci-ids.ucw.cz/read/PD/>.
 pub enum DeviceClass {
     Unclassified,                      // ID: 00
     MassStorageController,             // ID: 01
