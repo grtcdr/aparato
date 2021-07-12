@@ -26,6 +26,7 @@ cfg_if::cfg_if! {
     if #[cfg(target_os = "linux")] {
         pub mod linux;
         pub type PCIDevice = linux::LinuxPCIDevice;
+        pub type DeviceClass = device_class::DeviceClass;
     } else if #[cfg(target_os = "macos")] {
         pub mod macos;
         pub type PCIDevice = macos::MacOSPCIDevice;
@@ -44,13 +45,10 @@ cfg_if::cfg_if! {
 pub trait Device {
     /// This function returns a new instance of `PCIDevice` struct using the given `path`.
     ///
-    /// ## Examples
+    /// ## Example:
     ///
     /// ```
     /// use aparato::{Device, PCIDevice};
-    ///
-    /// // PCIDevice::new() can autocomplete the path to the PCIDevice
-    /// // if it isn't provided.
     ///
     /// // foo, bar and baz all point to the same device.
     /// let foo = PCIDevice::new("00:04.0");
@@ -114,7 +112,7 @@ pub(crate) mod private {
     pub(crate) trait Properties {
         // This trait contains exclusively the setters.
 
-        /// This function is reserved for use by `Fetcher`
+        /// This function is reserved for use by some of the mods provided by `Fetcher`
         fn reserved_new(path: &str) -> Self;
 
         /// Set the `path` field of the `PCIDevice`.
@@ -123,46 +121,46 @@ pub(crate) mod private {
         /// This function sets the `address` field of the `PCIDevice`
         fn set_address(&mut self);
 
-        /// This function sets the `device_id` field of the `PCIDevice`.
+        /// This function sets the `device_id` field of the `PCIDevice`
         fn set_class_id(&mut self);
 
-        /// This function sets the `device_id` field of the `PCIDevice`.
+        /// This function sets the `device_id` field of the `PCIDevice`
         fn set_vendor_id(&mut self);
 
-        /// This function sets the `device_id` field of the `PCIDevice`.
+        /// This function sets the `device_id` field of the `PCIDevice`
         fn set_device_id(&mut self);
 
-        /// This function sets the `numa_node` field of the `PCIDevice`.
+        /// This function sets the `numa_node` field of the `PCIDevice`
         fn set_numa_node(&mut self);
 
-        /// This function sets the `class_name` field of the `PCIDevice`.
+        /// This function sets the `class_name` field of the `PCIDevice`
         fn set_class_name(&mut self);
 
-        /// This function sets the `subclass_name` field of the `PCIDevice`.
+        /// This function sets the `subclass_name` field of the `PCIDevice`
         fn set_subclass_name(&mut self);
 
-        /// This function sets the `revision` field of the `PCIDevice`.
+        /// This function sets the `revision` field of the `PCIDevice`
         fn set_revision(&mut self);
 
-        /// This function sets the `enabled` field of the `PCIDevice`.
+        /// This function sets the `enabled` field of the `PCIDevice`
         fn set_enabled(&mut self);
 
-        /// This function sets the `d3cold_allowed` field of the `PCIDevice`.
+        /// This function sets the `d3cold_allowed` field of the `PCIDevice`
         fn set_d3cold_allowed(&mut self);
 
-        /// This function sets the `vendor_name` field of the `PCIDevice`.
+        /// This function sets the `vendor_name` field of the `PCIDevice`
         fn set_vendor_name(&mut self);
 
-        /// This function sets the `device_name` field of the `PCIDevice`.
+        /// This function sets the `device_name` field of the `PCIDevice`
         fn set_device_name(&mut self);
 
-        /// This function sets the `subsystem_vendor_id` field of the `PCIDevice`.
+        /// This function sets the `subsystem_vendor_id` field of the `PCIDevice`
         fn set_subsystem_device_id(&mut self);
 
-        /// This function sets the `subsystem_device_id` field of the `PCIDevice`.
+        /// This function sets the `subsystem_device_id` field of the `PCIDevice`
         fn set_subsystem_vendor_id(&mut self);
 
-        /// This function sets the `subsystem_name` field of the `PCIDevice`.
+        /// This function sets the `subsystem_name` field of the `PCIDevice`
         fn set_subsystem_name(&mut self);
     }
 }
@@ -176,9 +174,9 @@ pub trait Fetch {
     ///
     /// If anything other than `None` or `Some(0)` is provided to the function,
     /// it will limit itself to fetch only the given amount.
-    /// ## Examples:
+    /// ## Example:
     /// ```
-    /// use aparato::{PCIDevice, Fetch, Device}; 
+    /// use aparato::{PCIDevice, Fetch, Device};
     ///
     /// let devices = PCIDevice::fetch(Some(2));
     ///
@@ -190,16 +188,30 @@ pub trait Fetch {
     fn fetch(maximum_devices: Option<u8>) -> Vec<PCIDevice>;
 
     /// This function returns a **list** of available PCI devices of a specific class and their information.
-    fn fetch_by_class(class: crate::classes::DeviceClass) -> Vec<PCIDevice>;
+    fn fetch_by_class(
+        class: crate::device_class::DeviceClass,
+        maximum_devices: Option<u8>,
+    ) -> Vec<PCIDevice>;
 
-    /// This function returns a **list** of available GPUs and their information.
-    ///
-    /// This essentially wraps `fetch_by_class(DeviceClass::DisplayController)`
-    /// but masks unnecessary data from device and vendor names, for example: \
+    /// This function returns a **list** of available and enabled GPUs,
+    /// masking unnecessary data from device and vendor names. for example:
     /// - `TU117M [GeForce GTX 1650 Mobile / Max-Q]` becomes `GeForce GTX 1650 Mobile / Max-Q`
     /// - `NVIDIA Corporation` becomes `NVIDIA`
-    fn fetch_gpus() -> Vec<PCIDevice>;
+    ///
+    /// ## Example:
+    /// ```
+    /// use aparato::{Fetch, PCIDevice};
+    ///
+    /// fn main() {
+    ///     // Returns a list of "device_vendor + device_name"
+    ///     let devices = PCIDevice::fetch_gpus(None);
+    ///
+    ///     // Example output: ["NVIDIA GeForce GTX 1650 Mobile / Max-Q", "Intel UHD Graphics 620"]
+    ///     println!("{:?}", devices);
+    /// }
+    /// ```
+    fn fetch_gpus(maximum_devices: Option<u8>) -> Vec<String>;
 }
 
-mod classes;
+pub mod device_class;
 mod extra;
