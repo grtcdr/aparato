@@ -19,7 +19,7 @@
 //! There's always a chance that the address you provided to [`Device::new()`] could be non-existant, which will result
 //! in an empty object being returned.
 //!
-//! If you're unsure what PCI device you want to query, you can let [`Fetch`] do that for you. 
+//! If you're unsure what PCI device you want to query, you can let [`Fetch`] do that for you.
 //! It can return a list of PCI devices with all their information.
 
 cfg_if::cfg_if! {
