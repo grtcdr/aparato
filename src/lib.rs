@@ -16,11 +16,11 @@
 //! ```
 //!
 //! Information about `02:00.0` should be printed to the screen.
-//! There's always a chance that the address you provided to [`PCIDevice::new()`] could be non-existant, which will result
+//! There's always a chance that the address you provided to [`Device::new()`] could be non-existant, which will result
 //! in an empty object being returned.
 //!
-//! We can complete avoid this behavior by letting [`Fetch`] handle everything for you. It'll traverse the filesystem to
-//! to get only the correct and available PCI devices, and will return their information as well.
+//! If you're unsure what PCI device you want to query, you can let [`Fetch`] do that for you. 
+//! It can return a list of PCI devices with all their information.
 
 cfg_if::cfg_if! {
     if #[cfg(target_os = "linux")] {
