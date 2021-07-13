@@ -81,20 +81,20 @@ impl Device for LinuxPCIDevice {
         self.address.to_owned()
     }
 
-    fn class_id(&self) -> String {
-        hex::encode(self.class_id.to_owned())
+    fn class_id(&self) -> Vec<u8> {
+        self.class_id.to_owned()
     }
 
-    fn vendor_id(&self) -> String {
-        hex::encode(self.vendor_id.to_owned())
+    fn vendor_id(&self) -> Vec<u8> {
+        self.vendor_id.to_owned()
     }
 
-    fn device_id(&self) -> String {
-        hex::encode(self.device_id.to_owned())
+    fn device_id(&self) -> Vec<u8> {
+        self.device_id.to_owned()
     }
 
     fn numa_node(&self) -> isize {
-        self.numa_node.to_owned()
+        self.numa_node
     }
 
     fn class_name(&self) -> String {
@@ -121,20 +121,20 @@ impl Device for LinuxPCIDevice {
         self.d3cold_allowed
     }
 
-    fn revision(&self) -> String {
-        hex::encode(self.revision.to_owned())
+    fn revision(&self) -> Vec<u8> {
+        self.revision.to_owned()
     }
 
     fn subsystem_name(&self) -> String {
         self.subsystem_name.to_owned()
     }
 
-    fn subsystem_vendor_id(&self) -> String {
-        hex::encode(self.subsystem_vendor_id.to_owned())
+    fn subsystem_vendor_id(&self) -> Vec<u8> {
+        self.subsystem_vendor_id.to_owned()
     }
 
-    fn subsystem_device_id(&self) -> String {
-        hex::encode(self.subsystem_device_id.to_owned())
+    fn subsystem_device_id(&self) -> Vec<u8> {
+        self.subsystem_device_id.to_owned()
     }
 }
 

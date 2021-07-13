@@ -38,15 +38,15 @@ impl Device for MacOSPCIDevice {
         todo!()
     }
 
-    fn class_id(&self) -> String {
+    fn class_id(&self) -> Vec<u8> {
         todo!()
     }
 
-    fn vendor_id(&self) -> String {
+    fn vendor_id(&self) -> Vec<u8> {
         todo!()
     }
 
-    fn device_id(&self) -> String {
+    fn device_id(&self) -> Vec<u8> {
         todo!()
     }
 
@@ -78,7 +78,7 @@ impl Device for MacOSPCIDevice {
         todo!()
     }
 
-    fn revision(&self) -> String {
+    fn revision(&self) -> Vec<u8> {
         todo!()
     }
 
@@ -86,11 +86,11 @@ impl Device for MacOSPCIDevice {
         todo!()
     }
 
-    fn subsystem_vendor_id(&self) -> String {
+    fn subsystem_vendor_id(&self) -> Vec<u8> {
         todo!()
     }
 
-    fn subsystem_device_id(&self) -> String {
+    fn subsystem_device_id(&self) -> Vec<u8> {
         todo!()
     }
 }

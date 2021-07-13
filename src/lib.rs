@@ -66,13 +66,19 @@ pub trait Device {
     fn address(&self) -> String;
 
     /// This function returns the `PCIDevice` class ID.
-    fn class_id(&self) -> String;
+    ///
+    /// The return value is a decoded hexadecimal value.
+    fn class_id(&self) -> Vec<u8>;
 
     /// This function returns the `PCIDevice` vendor ID.
-    fn vendor_id(&self) -> String;
+    ///
+    /// The return value is a decoded hexadecimal value.
+    fn vendor_id(&self) -> Vec<u8>;
 
     /// This function returns the `PCIDevice` device ID.
-    fn device_id(&self) -> String;
+    ///
+    /// The return value is a decoded hexadecimal value.
+    fn device_id(&self) -> Vec<u8>;
 
     /// This function returns the `PCIDevice` NUMA node.
     fn numa_node(&self) -> isize;
@@ -96,16 +102,22 @@ pub trait Device {
     fn d3cold_allowed(&self) -> bool;
 
     /// This function returns whether the `PCIDevice` is enabled.
-    fn revision(&self) -> String;
+    ///
+    /// The return value is a decoded hexadecimal value.
+    fn revision(&self) -> Vec<u8>;
 
     /// This function returns the `PCIDevice` subsystem vendor.
     fn subsystem_name(&self) -> String;
 
     /// This function returns the `PCIDevice` subsystem vendor.
-    fn subsystem_vendor_id(&self) -> String;
+    ///
+    /// The return value is a decoded hexadecimal value.
+    fn subsystem_vendor_id(&self) -> Vec<u8>;
 
     /// This function returns the `PCIDevice` subsystem vendor.
-    fn subsystem_device_id(&self) -> String;
+    ///
+    /// The return value is a decoded hexadecimal value.
+    fn subsystem_device_id(&self) -> Vec<u8>;
 }
 
 pub(crate) mod private {
