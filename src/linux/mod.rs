@@ -553,19 +553,19 @@ mod tests {
     #[test]
     fn test_class_id() {
         let device = LinuxPCIDevice::new(PLACEHOLDER_PCI_DEVICE);
-        assert_ne!(device.device_id(), "");
+        assert_ne!(device.device_id(), Vec::new());
     }
 
     #[test]
     fn test_vendor_id() {
         let device = LinuxPCIDevice::new(PLACEHOLDER_PCI_DEVICE);
-        assert_ne!(device.vendor_id(), "");
+        assert_ne!(device.vendor_id(), Vec::new());
     }
 
     #[test]
     fn test_device_id() {
         let device = LinuxPCIDevice::new(PLACEHOLDER_PCI_DEVICE);
-        assert_ne!(device.device_id(), "");
+        assert_ne!(device.device_id(), Vec::new());
     }
 
     #[test]
@@ -577,19 +577,19 @@ mod tests {
     #[test]
     fn test_revision() {
         let device = LinuxPCIDevice::new(PLACEHOLDER_PCI_DEVICE);
-        assert_ne!(device.revision(), "");
+        assert_ne!(device.revision(), Vec::new());
     }
 
     #[test]
     fn test_subsystem_vendor_id() {
         let device = LinuxPCIDevice::new(PLACEHOLDER_PCI_DEVICE);
-        assert_ne!(device.subsystem_vendor_id(), "");
+        assert_ne!(device.subsystem_vendor_id(), Vec::new());
     }
 
     #[test]
     fn test_subsystem_device_id() {
         let device = LinuxPCIDevice::new(PLACEHOLDER_PCI_DEVICE);
-        assert_ne!(device.subsystem_device_id(), "");
+        assert_ne!(device.subsystem_device_id(), Vec::new());
     }
 
     #[test]
