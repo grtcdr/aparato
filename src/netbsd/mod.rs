@@ -1,5 +1,5 @@
 #![doc(hidden)]
-use crate::classes::*;
+use crate::device_class::*;
 use crate::extra::*;
 use crate::private::Properties;
 use crate::Device;
@@ -26,6 +26,10 @@ pub struct NetBSDPCIDevice {
 }
 
 impl Device for NetBSDPCIDevice {
+    fn reserved_new(path: &str) -> Self {
+        todo!()
+    }
+    
     fn new(path: &str) -> Self {
         todo!()
     }

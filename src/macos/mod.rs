@@ -1,5 +1,5 @@
 #![doc(hidden)]
-use crate::classes::*;
+use crate::device_class::*;
 use crate::extra::*;
 use crate::private::Properties;
 use crate::Device;
@@ -96,6 +96,10 @@ impl Device for MacOSPCIDevice {
 }
 
 impl Properties for MacOSPCIDevice {
+    fn reserved_new(path: &str) -> Self {
+        todo!()
+    }
+    
     fn set_path(&mut self, p: PathBuf) {
         todo!()
     }
