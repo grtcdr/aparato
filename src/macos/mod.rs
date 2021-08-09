@@ -99,7 +99,7 @@ impl Properties for MacOSPCIDevice {
     fn reserved_new(path: &str) -> Self {
         todo!()
     }
-    
+
     fn set_path(&mut self, p: PathBuf) {
         todo!()
     }

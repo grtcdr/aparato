@@ -29,7 +29,7 @@ impl Device for NetBSDPCIDevice {
     fn reserved_new(path: &str) -> Self {
         todo!()
     }
-    
+
     fn new(path: &str) -> Self {
         todo!()
     }
