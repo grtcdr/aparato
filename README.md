@@ -15,11 +15,6 @@ A <a href="https://pci-ids.ucw.cz/">pci.ids</a>-compliant library for getting in
 
 ### Disclaimer
 
-- It isn't recommended to utilize the `main` branch, as the 
-project is still brand new and changes to the API are
-very likely to happen. Instead, you should use the crate provided in
-[crates.io](https://crates.io/crates/aparato).
-
 - aparato right now only works on Linux, more platforms will receive
 support in the future.
 
@@ -28,7 +23,7 @@ support in the future.
 Add the following to your project's *Cargo.toml* file:
 
 ```toml
-aparato = "4.0.0" # Be sure to use the latest version
+aparato = "6.0.2" # Be sure to use the latest version
 ```
 
 ### Examples
