@@ -1,13 +1,12 @@
 [package]
 name = "aparato"
-description = "A pci.ids-compliant library for getting information about available PCI devices."
-version = "6.0.1"
+description = "A library for querying PCI devices and a parser for pci.ids."
+version = "6.0.2"
 license = "MIT"
 readme = "README.md"
 edition = "2018"
 repository = "https://github.com/grtcdr/aparato"
 documentation = "https://docs.rs/aparato"
-keywords = ["pci", "library", "hardware"]
 categories = ["parser-implementations"]
 authors = ["grtcdr <grtcdr@pm.me>"]
 
