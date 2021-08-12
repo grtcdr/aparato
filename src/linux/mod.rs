@@ -330,6 +330,7 @@ mod tests {
         assert_ne!(device.subsystem_device(), "");
     }
 
+    #[ignore]
     #[test]
     fn test_class_name() {
         let device = LinuxPCIDevice::new(PLACEHOLDER_PCI_DEVICE);
