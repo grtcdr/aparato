@@ -1,6 +1,4 @@
 #![doc(hidden)]
-#![allow(unused_variables)]
-use crate::device_class::*;
 use crate::extra::*;
 use crate::private::Properties;
 use crate::Device;
@@ -10,7 +8,7 @@ use std::path::PathBuf;
 /// This is where PCI devices are located.
 const PATH_TO_PCI_DEVICES: &str = "/sys/bus/pci/devices/";
 /// This is where the pci.ids file is located.
-const PATH_TO_PCI_IDS: &str = "/usr/share/hwdata/pci.ids/";
+const PATH_TO_PCI_IDS: &str = "/usr/share/hwdata/pci.ids";
 
 #[derive(Debug)]
 pub struct LinuxPCIDevice {
@@ -35,16 +33,15 @@ impl Device for LinuxPCIDevice {
     fn new(path: &str) -> Self {
         let device_path = PathBuf::from("/sys/bus/pci/devices").join(path);
 
-        // One of the following two conditions will try to autocomplete the path of the
-        // PCI device if the one provided doesn't point to a real path in the filesystem.
         if !device_path.is_dir() {
             panic!()
         }
 
-        let mut device: LinuxPCIDevice = Default::default();
+        let mut device: Self = Default::default();
 
         device.set_path(device_path);
         device.set_class();
+        device.set_class_properties();
         device.set_vendor();
         device.set_device();
         device.set_enabled();
@@ -65,7 +62,7 @@ impl Device for LinuxPCIDevice {
     fn subclass(&self) -> String {
         self.subclass.to_owned()
     }
-    
+
     fn prog_if(&self) -> String {
         self.prog_if.to_owned()
     }
@@ -157,6 +154,30 @@ impl Properties for LinuxPCIDevice {
             self.enabled = !str.contains("0");
         }
     }
+
+    fn set_class_properties(&mut self) {
+        if let Ok(lines) = read_lines(PATH_TO_PCI_IDS) {
+            let mut found_it = false;
+            for line in lines {
+                if let Ok(l) = line {
+                    if l.starts_with("C") && !l.contains(&self.class) {
+                        found_it = false;
+                    } else if l.starts_with("C") && l.contains(&self.class) {
+                        self.class_name = l
+                            .replace("C", "")
+                            .replace(&self.class, "")
+                            .trim()
+                            .to_owned();
+                        found_it = true;
+                    } else if l.starts_with("\t\t") && l.contains(&self.prog_if) && found_it {
+                        self.prog_if_name = l.replace(&self.prog_if, "").trim().to_owned();
+                    } else if l.starts_with("\t") && l.contains(&self.subclass) && found_it {
+                        self.subclass_name = l.replace(&self.subclass, "").trim().to_owned();
+                    }
+                }
+            }
+        }
+    }
 }
 
 impl Default for LinuxPCIDevice {
@@ -199,92 +220,16 @@ impl Fetch for LinuxPCIDevice {
                 devices.push(device);
             }
         }
+
         return devices;
     }
 
-    fn fetch_by_class(class: DeviceClass, maximum_devices: Option<u8>) -> Vec<LinuxPCIDevice> {
-        let mut devices = Vec::new();
-        let dir_entries = list_dir_entries(PATH_TO_PCI_DEVICES);
-        let mut i = 0u8;
-
-        for dir in dir_entries {
-            if let Some(d) = dir.to_str() {
-                if let Some(m) = maximum_devices {
-                    i = i + 1;
-                    if i > m {
-                        continue;
-                    }
-                }
-
-                // We're using `PCIDevice::reserved_new()` to initialize a PCIDevice
-                // with as little data as possible to avoid performance issues.
-                let mut device = LinuxPCIDevice::new(d);
-                if device.class_name() == class.to_string() {
-                    // We can now proceed to get and set the rest of the data
-                    // after having confirmed that the current PCIDevice's class matches
-                    // that provided by the user through a variant of the `DeviceClass` enum.
-                    device.set_vendor();
-                    device.set_device();
-                    device.set_enabled();
-                    device.set_subsystem_device();
-                    device.set_subsystem_vendor();
-                    devices.push(device);
-                }
-            }
-        }
-
-        return devices;
+    fn fetch_by_class(maximum_devices: Option<u8>) -> Vec<LinuxPCIDevice> {
+        todo!()
     }
 
     fn fetch_gpus(maximum_devices: Option<u8>) -> Vec<String> {
-        let mut gpus: Vec<String> = vec![];
-        let devices: Vec<LinuxPCIDevice> = Vec::new();
-        let dir_entries = list_dir_entries(PATH_TO_PCI_DEVICES);
-        let mut i = 0u8;
-
-        for dir in dir_entries {
-            if let Some(d) = dir.to_str() {
-                if let Some(m) = maximum_devices {
-                    i = i + 1;
-                    if i > m {
-                        continue;
-                    }
-                }
-
-                // We're using `PCIDevice::reserved_new()` to initialize a PCIDevice
-                // with as little data as possible to avoid performance issues.
-                let mut device = LinuxPCIDevice::new(d);
-                if device.class_name() == DeviceClass::DisplayController.to_string() {
-                    // We can now proceed to get and set the rest of the data
-                    // after having confirmed that the current PCIDevice's class matches
-                    // that provided by the user through a variant of the `DeviceClass` enum.
-                    device.set_enabled();
-                    // We're only going to return enabled gpus.
-                    if device.enabled {
-                        device.set_vendor();
-                        device.set_device();
-
-                        let whole_name = device.device_name();
-                        // Extracting text within brackets from device_name.
-                        if let Some(start_bytes) = whole_name.find("[") {
-                            if let Some(end_bytes) = whole_name.rfind("]") {
-                                device.device_name =
-                                    whole_name[start_bytes + 1..end_bytes].to_owned();
-                            }
-                        }
-
-                        if device.vendor_name().contains("Corporation") {
-                            device.vendor_name = device.vendor_name().replace(" Corporation", "");
-                        }
-
-                        let str = String::from(device.vendor_name + " " + &device.device_name);
-                        gpus.push(str);
-                    }
-                }
-            }
-        }
-
-        return gpus;
+        todo!()
     }
 }
 

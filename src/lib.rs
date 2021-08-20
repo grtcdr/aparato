@@ -26,7 +26,6 @@ cfg_if::cfg_if! {
     if #[cfg(target_os = "linux")] {
         pub mod linux;
         pub type PCIDevice = linux::LinuxPCIDevice;
-        pub type DeviceClass = device_class::DeviceClass;
     } else if #[cfg(target_os = "macos")] {
         pub mod macos;
         pub type PCIDevice = macos::MacOSPCIDevice;
@@ -43,17 +42,14 @@ cfg_if::cfg_if! {
 
 /// A trait that provides the necessary methods which can initialize a single PCIDevice and fetch its information.
 pub trait Device {
-    /// This function returns a new instance of `PCIDevice` struct using the given `path`.
+    /// This function returns a new `PCIDevice` object using the given PCI domain.
     ///
     /// # Examples
     ///
     /// ```
     /// use aparato::{Device, PCIDevice};
     ///
-    /// // foo, bar and baz all point to the same device.
-    /// let foo = PCIDevice::new("00:04.0");
     /// let bar = PCIDevice::new("0000:00:04.0");
-    /// let baz = PCIDevice::new("/sys/bus/pci/devices/0000:00:04.0");
     /// ```
     fn new(path: &str) -> Self;
 
@@ -112,6 +108,8 @@ pub(crate) mod private {
 
         /// This function sets the `class` field.
         fn set_class(&mut self);
+
+        fn set_class_properties(&mut self);
 
         /// This function sets the `vendor` field.
         fn set_vendor(&mut self);
@@ -173,7 +171,6 @@ pub trait Fetch {
     /// }
     /// ```
     fn fetch_by_class(
-        class: crate::device_class::DeviceClass,
         maximum_devices: Option<u8>,
     ) -> Vec<PCIDevice>;
 
@@ -197,7 +194,6 @@ pub trait Fetch {
     fn fetch_gpus(maximum_devices: Option<u8>) -> Vec<String>;
 }
 
-pub mod device_class;
 mod extra;
 
 pub enum Error {
