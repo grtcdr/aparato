@@ -1,7 +1,7 @@
 <div align="center">
 <h1>aparato</h1>
 
-A <a href="https://pci-ids.ucw.cz/">pci.ids</a>-compliant library for getting information about available PCI devices.
+A library for querying connected PCI devices and a <a href="https://pci-ids.ucw.cz/">pci.ids</a> parser. 
 
 <a href="https://crates.io/crates/aparato">
     <img src="https://img.shields.io/crates/v/aparato" alt="version" />
@@ -15,8 +15,7 @@ A <a href="https://pci-ids.ucw.cz/">pci.ids</a>-compliant library for getting in
 
 ### Disclaimer
 
-- aparato right now only works on Linux, more platforms will receive
-support in the future.
+- aparato is currently unmaintained.
 
 ### Usage
 
