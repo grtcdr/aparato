@@ -26,7 +26,6 @@ cfg_if::cfg_if! {
     if #[cfg(target_os = "linux")] {
         pub mod linux;
         pub type PCIDevice = linux::LinuxPCIDevice;
-        pub type DeviceClass = device_class::DeviceClass;
     } else if #[cfg(target_os = "macos")] {
         pub mod macos;
         pub type PCIDevice = macos::MacOSPCIDevice;
@@ -43,137 +42,89 @@ cfg_if::cfg_if! {
 
 /// A trait that provides the necessary methods which can initialize a single PCIDevice and fetch its information.
 pub trait Device {
-    /// This function returns a new instance of `PCIDevice` struct using the given `path`.
+    /// This function returns a new `PCIDevice` object using the given PCI domain.
     ///
     /// # Examples
     ///
     /// ```
     /// use aparato::{Device, PCIDevice};
     ///
-    /// // foo, bar and baz all point to the same device.
-    /// let foo = PCIDevice::new("00:04.0");
     /// let bar = PCIDevice::new("0000:00:04.0");
-    /// let baz = PCIDevice::new("/sys/bus/pci/devices/0000:00:04.0");
     /// ```
     fn new(path: &str) -> Self;
 
     // Getters...
 
-    /// This function returns the `PCIDevice` path.
+    /// This function returns the path.
     fn path(&self) -> std::path::PathBuf;
 
-    /// This function returns the `PCIDevice` address.
-    fn address(&self) -> String;
+    /// This function returns the class identifier.
+    fn class(&self) -> String;
 
-    /// This function returns the `PCIDevice` class ID.
-    ///
-    /// The return value is a decoded hexadecimal value.
-    fn class_id(&self) -> Vec<u8>;
+    /// This function returns the subclass identifier.
+    fn subclass(&self) -> String;
 
-    /// This function returns the `PCIDevice` vendor ID.
-    ///
-    /// The return value is a decoded hexadecimal value.
-    fn vendor_id(&self) -> Vec<u8>;
+    /// This function returns the program interface identifier.
+    fn prog_if(&self) -> String;
 
-    /// This function returns the `PCIDevice` device ID.
-    ///
-    /// The return value is a decoded hexadecimal value.
-    fn device_id(&self) -> Vec<u8>;
+    /// This function returns the vendor ID.
+    fn vendor(&self) -> String;
 
-    /// This function returns the `PCIDevice` NUMA node.
-    fn numa_node(&self) -> isize;
+    /// This function returns the device ID.
+    fn device(&self) -> String;
 
-    /// This function returns the `PCIDevice` class name.
+    /// This function returns the class name.
     fn class_name(&self) -> String;
 
-    /// This function returns the `PCIDevice` subclass name.
+    /// This function returns the subclass name.
     fn subclass_name(&self) -> String;
 
-    /// This function returns the `PCIDevice` vendor name.
+    /// This function returns the program interface name.
+    fn prog_if_name(&self) -> String;
+
+    /// This function returns the vendor name.
     fn vendor_name(&self) -> String;
 
-    /// This function returns the `PCIDevice` device name.
+    /// This function returns the device name.
     fn device_name(&self) -> String;
 
-    /// This function returns whether the `PCIDevice` is enabled.
+    /// This function returns whether the is enabled.
     fn enabled(&self) -> bool;
 
-    /// This function returns whether the `PCIDevice` is enabled.
-    fn d3cold_allowed(&self) -> bool;
-
-    /// This function returns whether the `PCIDevice` is enabled.
-    ///
-    /// The return value is a decoded hexadecimal value.
-    fn revision(&self) -> Vec<u8>;
-
-    /// This function returns the `PCIDevice` subsystem vendor.
+    /// This function returns the subsystem vendor.
     fn subsystem_name(&self) -> String;
 
-    /// This function returns the `PCIDevice` subsystem vendor.
-    ///
-    /// The return value is a decoded hexadecimal value.
-    fn subsystem_vendor_id(&self) -> Vec<u8>;
+    /// This function returns the subsystem vendor.
+    fn subsystem_vendor(&self) -> String;
 
-    /// This function returns the `PCIDevice` subsystem vendor.
-    ///
-    /// The return value is a decoded hexadecimal value.
-    fn subsystem_device_id(&self) -> Vec<u8>;
+    /// This function returns the subsystem vendor.
+    fn subsystem_device(&self) -> String;
 }
 
 pub(crate) mod private {
     pub(crate) trait Properties {
-        // This trait contains exclusively the setters.
-
-        /// This function is reserved for use by some of the mods provided by `Fetcher`
-        fn reserved_new(path: &str) -> Self;
-
-        /// Set the `path` field of the `PCIDevice`.
+        /// This function sets the `path` field.
         fn set_path(&mut self, p: std::path::PathBuf);
 
-        /// This function sets the `address` field of the `PCIDevice`
-        fn set_address(&mut self);
+        /// This function sets the `class` field.
+        fn set_class(&mut self);
 
-        /// This function sets the `device_id` field of the `PCIDevice`
-        fn set_class_id(&mut self);
+        fn set_class_properties(&mut self);
 
-        /// This function sets the `device_id` field of the `PCIDevice`
-        fn set_vendor_id(&mut self);
+        /// This function sets the `vendor` field.
+        fn set_vendor(&mut self);
 
-        /// This function sets the `device_id` field of the `PCIDevice`
-        fn set_device_id(&mut self);
+        /// This function sets the `device` field.
+        fn set_device(&mut self);
 
-        /// This function sets the `numa_node` field of the `PCIDevice`
-        fn set_numa_node(&mut self);
-
-        /// This function sets the `class_name` field of the `PCIDevice`
-        fn set_class_name(&mut self);
-
-        /// This function sets the `subclass_name` field of the `PCIDevice`
-        fn set_subclass_name(&mut self);
-
-        /// This function sets the `revision` field of the `PCIDevice`
-        fn set_revision(&mut self);
-
-        /// This function sets the `enabled` field of the `PCIDevice`
+        /// This function sets the `enabled` field.
         fn set_enabled(&mut self);
 
-        /// This function sets the `d3cold_allowed` field of the `PCIDevice`
-        fn set_d3cold_allowed(&mut self);
+        /// This function sets the `subsystem_vendor` field.
+        fn set_subsystem_device(&mut self);
 
-        /// This function sets the `vendor_name` field of the `PCIDevice`
-        fn set_vendor_name(&mut self);
-
-        /// This function sets the `device_name` field of the `PCIDevice`
-        fn set_device_name(&mut self);
-
-        /// This function sets the `subsystem_vendor_id` field of the `PCIDevice`
-        fn set_subsystem_device_id(&mut self);
-
-        /// This function sets the `subsystem_device_id` field of the `PCIDevice`
-        fn set_subsystem_vendor_id(&mut self);
-
-        /// This function sets the `subsystem_name` field of the `PCIDevice`
-        fn set_subsystem_name(&mut self);
+        /// This function sets the `subsystem_device` field.
+        fn set_subsystem_vendor(&mut self);
     }
 }
 
@@ -220,7 +171,6 @@ pub trait Fetch {
     /// }
     /// ```
     fn fetch_by_class(
-        class: crate::device_class::DeviceClass,
         maximum_devices: Option<u8>,
     ) -> Vec<PCIDevice>;
 
@@ -244,5 +194,9 @@ pub trait Fetch {
     fn fetch_gpus(maximum_devices: Option<u8>) -> Vec<String>;
 }
 
-pub mod device_class;
 mod extra;
+
+pub enum Error {
+    Invalid,
+    Other,
+}
